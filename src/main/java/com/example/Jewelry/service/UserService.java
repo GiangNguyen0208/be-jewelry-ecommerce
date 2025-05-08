@@ -28,7 +28,6 @@ public interface UserService {
 
     int activeUser(String email);
 
-    List<User> getAllMentors();
     List<User> getAllUser();
 
 }

@@ -2,7 +2,7 @@ package com.example.Jewelry.controller;
 
 import com.example.Jewelry.dto.request.UserLoginRequest;
 import com.example.Jewelry.dto.response.CommonApiResponse;
-import com.example.Jewelry.dto.response.RegisterUserRequestDTO;
+import com.example.Jewelry.dto.response.RegisterUserRequest;
 import com.example.Jewelry.dto.response.UserLoginResponse;
 import com.example.Jewelry.entity.User;
 import com.example.Jewelry.resource.UserResource;
@@ -18,7 +18,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("api/user")
-@CrossOrigin(origins = "http://localhost:8080")
+@CrossOrigin(origins = "http://localhost:3000")
 public class UserController {
     @Autowired
     UserResource userResource;
@@ -33,10 +33,9 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<CommonApiResponse> register(@RequestBody RegisterUserRequestDTO request){
+    public ResponseEntity<CommonApiResponse> register(@RequestBody RegisterUserRequest request){
         return userResource.registerUser(request);
     }
-
 
     @GetMapping(path = "/confirm")
     public ResponseEntity<CommonApiResponse> confirm(@RequestParam("token") String token) {

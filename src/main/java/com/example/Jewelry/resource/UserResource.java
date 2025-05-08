@@ -6,7 +6,7 @@ import com.example.Jewelry.dao.UserDAO;
 import com.example.Jewelry.dto.UserDTO;
 import com.example.Jewelry.dto.request.UserLoginRequest;
 import com.example.Jewelry.dto.response.CommonApiResponse;
-import com.example.Jewelry.dto.response.RegisterUserRequestDTO;
+import com.example.Jewelry.dto.response.RegisterUserRequest;
 import com.example.Jewelry.dto.response.UserLoginResponse;
 import com.example.Jewelry.entity.ConfirmationToken;
 import com.example.Jewelry.entity.User;
@@ -132,7 +132,7 @@ public class UserResource {
 
     }
 
-    public ResponseEntity<CommonApiResponse> registerUser(RegisterUserRequestDTO request) {
+    public ResponseEntity<CommonApiResponse> registerUser(RegisterUserRequest request) {
 
         LOG.info("Request received for Register User");
 
@@ -178,7 +178,7 @@ public class UserResource {
 
 
         // Register User Input Form
-        User user = RegisterUserRequestDTO.toUserEntity(request);
+        User user = RegisterUserRequest.toUserEntity(request);
         LocalDateTime now = LocalDateTime.now();
 
         user.setFirstName(request.getFirstName());
@@ -192,7 +192,7 @@ public class UserResource {
         User userActive = userService.addUser(user);
 
         String token = userService.generateToken(user);
-        String frontendUrl = "http://localhost:5173/verify-email?token=" + token;
+        String frontendUrl = "http://localhost:3000/verify-email?token=" + token;
         emailService.send(
                 user.getEmailId(),
                 buildEmail(user.getUsername(), frontendUrl));
@@ -216,7 +216,7 @@ public class UserResource {
                 + "<a href=\"" + link + "\" style=\"display: inline-block; padding: 12px 24px; color: #fff; background-color: #1a73e8; text-decoration: none; border-radius: 5px; font-weight: bold;\">Xác nhận email</a>"
                 + "</p>"
                 + "<p>Nếu bạn không thực hiện đăng ký này, vui lòng bỏ qua email này.</p>"
-                + "<p>Trân trọng,<br><strong>Đội ngũ hỗ trợ LMS</strong></p>"
+                + "<p>Trân trọng,<br><strong>Đội ngũ hỗ trợ Jewelry</strong></p>"
                 + "</div>";
     }
 

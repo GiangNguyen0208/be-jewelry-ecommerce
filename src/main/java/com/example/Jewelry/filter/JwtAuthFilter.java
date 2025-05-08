@@ -27,25 +27,34 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private CustomUserDetailsService userDetailsService;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
+        System.out.println("[JwtAuthFilter] Request URI: " + request.getRequestURI());
+
         String authHeader = request.getHeader("Authorization");
         String token = null;
         String username = null;
+
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             token = authHeader.substring(7);
-            username = jwtUtils.extractUsername(token);  // username in token is actually a email
+            username = jwtUtils.extractUsername(token);
+            System.out.println("[JwtAuthFilter] Found token for user: " + username);
         }
 
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
             if (jwtUtils.validateToken(token, userDetails)) {
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                UsernamePasswordAuthenticationToken authToken =
+                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
+                System.out.println("[JwtAuthFilter] Authenticated user: " + username);
             }
         }
+
         filterChain.doFilter(request, response);
     }
+
 
 }
 
