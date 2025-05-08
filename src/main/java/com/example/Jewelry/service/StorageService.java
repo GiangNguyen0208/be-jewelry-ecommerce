@@ -31,7 +31,7 @@ public interface StorageService {
 
     String storeCourseNote(MultipartFile file);
 
-    Resource loadCourseNote(String fileName);
+    Resource loadCategoryImage(String fileName);
 
     void deleteCourseNote(String fileName);
 
