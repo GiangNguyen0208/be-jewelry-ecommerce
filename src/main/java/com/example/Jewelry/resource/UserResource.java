@@ -4,13 +4,17 @@ import com.example.Jewelry.Utility.Constant;
 import com.example.Jewelry.Utility.JwtUtils;
 import com.example.Jewelry.dao.UserDAO;
 import com.example.Jewelry.dto.UserDTO;
+import com.example.Jewelry.dto.request.DeliveryAddressRequestDTO;
 import com.example.Jewelry.dto.request.UserLoginRequest;
 import com.example.Jewelry.dto.response.CommonApiResponse;
+import com.example.Jewelry.dto.response.DeliveryAddressBookResponse;
 import com.example.Jewelry.dto.response.RegisterUserRequest;
 import com.example.Jewelry.dto.response.UserLoginResponse;
 import com.example.Jewelry.entity.ConfirmationToken;
+import com.example.Jewelry.entity.DeliveryAddress;
 import com.example.Jewelry.entity.User;
 import com.example.Jewelry.exception.UserSaveFailedException;
+import com.example.Jewelry.service.DeliveryAddressService;
 import com.example.Jewelry.service.EmailService;
 import com.example.Jewelry.service.ServiceImpl.ConfirmationTokenService;
 import com.example.Jewelry.service.StorageService;
@@ -43,6 +47,7 @@ import java.util.List;
 @Component
 @Transactional
 public class UserResource {
+
     private final Logger LOG = LoggerFactory.getLogger(UserResource.class);
 
     @Autowired
@@ -68,6 +73,10 @@ public class UserResource {
 
     @Autowired
     private JwtUtils jwtUtils;
+
+    /** Sổ địa chỉ */
+    @Autowired
+    private DeliveryAddressService deliveryAddressService;
 
     public ResponseEntity<UserLoginResponse> login(UserLoginRequest loginRequest) {
 
@@ -308,6 +317,22 @@ public class UserResource {
         // Cập nhật user
         user.setAvatar(savedFileName);
         userDAO.save(user);
+    }
+
+    public ResponseEntity<DeliveryAddressBookResponse> getDeliveryAddresses(int userID) {
+        DeliveryAddressBookResponse response = new DeliveryAddressBookResponse();
+        User user = userService.getUserById(userID);
+        if (user == null) {
+            response.setSuccess(false);
+            response.setResponseMessage("User is not found.");
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+
+        List<DeliveryAddress> addresses = deliveryAddressService.getByUserID(userID);
+        response.setSuccess(true);
+        response.setResponseMessage("Lấy sổ địa chỉ thành công!");
+        response.setAddreses(addresses);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
 }
