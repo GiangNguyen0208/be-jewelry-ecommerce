@@ -2,12 +2,15 @@ package com.example.Jewelry.resource;
 
 import com.example.Jewelry.Utility.Constant;
 import com.example.Jewelry.dao.CategoryDAO;
+import com.example.Jewelry.dao.ProductDAO;
 import com.example.Jewelry.dto.request.CategoryRequestDTO;
 import com.example.Jewelry.dto.response.CategoryResponseDTO;
 import com.example.Jewelry.dto.response.CommonApiResponse;
 import com.example.Jewelry.entity.Category;
+import com.example.Jewelry.entity.Product;
 import com.example.Jewelry.exception.CategorySaveFailedException;
 import com.example.Jewelry.service.CategoryService;
+import com.example.Jewelry.service.ProductService;
 import com.example.Jewelry.service.StorageService;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
@@ -37,6 +40,9 @@ public class CategoryResource {
 
     @Autowired
     private CategoryService categoryService;
+
+    @Autowired
+    private ProductService productService;
 
     @Autowired
     private CategoryDAO categoryDAO;
@@ -87,7 +93,7 @@ public class CategoryResource {
         return new ResponseEntity<CommonApiResponse>(response, HttpStatus.OK);
     }
 
-    public ResponseEntity<CommonApiResponse> updateCategory(CategoryRequestDTO request) {
+    public ResponseEntity<CommonApiResponse> updateCategory(int categoryId, CategoryRequestDTO request) {
         LOG.info("Request received for update category");
 
         CommonApiResponse response = new CommonApiResponse();
@@ -98,14 +104,14 @@ public class CategoryResource {
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
 
-        if (request.getId() == 0) {
+        if (categoryId == 0) {
             response.setResponseMessage("Missing category ID");
             response.setSuccess(false);
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
 
         // Kiểm tra xem category có tồn tại không
-        Category existingCategory = categoryService.getCategoryById(request.getId());
+        Category existingCategory = categoryService.getCategoryById(categoryId);
         if (existingCategory == null) {
             response.setResponseMessage("Category not found");
             response.setSuccess(false);
@@ -274,5 +280,58 @@ public class CategoryResource {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public ResponseEntity<CommonApiResponse> deleteCategory(int categoryId) {
+
+        LOG.info("Request received for deleting category");
+
+        CommonApiResponse response = new CommonApiResponse();
+
+        if (categoryId == 0) {
+            response.setResponseMessage("missing category Id");
+            response.setSuccess(false);
+
+            return new ResponseEntity<CommonApiResponse>(response, HttpStatus.BAD_REQUEST);
+        }
+
+        Category category = this.categoryService.getCategoryById(categoryId);
+
+        if (category == null) {
+            response.setResponseMessage("category not found");
+            response.setSuccess(false);
+
+            return new ResponseEntity<CommonApiResponse>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        List<Product> products = this.productService.getByCategoryAndStatus(category, Constant.ActiveStatus.ACTIVE.value());
+        category.setStatus(Constant.ActiveStatus.DELETED.value());
+        category.setDeleted(true);
+        category.setDeletedAt(LocalDateTime.now());
+        Category updatedCategory = this.categoryService.updateCategory(category);
+
+        if (updatedCategory == null) {
+            throw new CategorySaveFailedException("Failed to delete the Category");
+        }
+
+        if (!CollectionUtils.isEmpty(products)) {
+
+            for (Product product : products) {
+                product.setStatus(Constant.ActiveStatus.DEACTIVATED.value());
+            }
+
+            List<Product> updatedCourses = this.productService.updateAll(products);
+
+            if (CollectionUtils.isEmpty(updatedCourses)) {
+                throw new CategorySaveFailedException("Failed to delete the Course Category!!!");
+            }
+
+        }
+
+        response.setResponseMessage("Course Category & all its Courses Deleted Successful");
+        response.setSuccess(true);
+
+        return new ResponseEntity<CommonApiResponse>(response, HttpStatus.OK);
+
     }
 }

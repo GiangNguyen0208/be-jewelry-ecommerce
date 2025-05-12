@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -19,16 +20,17 @@ public class Product {
 
     private String name;
 
-    @Column(name = "product_description", columnDefinition = "LONGTEXT")
+    @Column(name = "description", columnDefinition = "LONGTEXT")
     private String description;
 
-    @Column(name = "product_price", nullable = false)
-    private Double productPrice;
+    @Column(name = "price", nullable = false)
+    private Double price;
 
-    @Column(name = "product_category")
-    private String category;
+    @ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+    @JoinColumn(name = "category_id")
+    private Category category;;
 
-    @Column(name = "product_brand")
+    @Column(name = "brand")
     private String brand;
 
     @ElementCollection
@@ -42,11 +44,11 @@ public class Product {
     @Column(name = "material")
     private String productMaterial;
 
-    @Column(name = "product_occasion")
-    private String productOccasion;
+    @Column(name = "occasion")
+    private String occasion;
 
-    @Column(name = "product_prev_price")
-    private Double productPrevPrice;
+    @Column(name = "prev_price")
+    private Double prevPrice;
 
     @Column(name = "product_is_favorite")
     private Boolean productIsFavorite;
@@ -56,4 +58,16 @@ public class Product {
 
     @Column(name = "product_is_badge")
     private String productIsBadge;
+
+    private boolean deleted;
+
+    private String status;
+
+    private LocalDateTime createdAt;
+
+    private LocalDateTime updateAt;
+
+    private LocalDateTime deletedAt;
+
+
 }
