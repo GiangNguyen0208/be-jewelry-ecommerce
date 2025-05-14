@@ -56,4 +56,11 @@ public class Constant {
             return this.type;
         }
     }
+    public enum CtvStatus {
+        PENDING("Pending"), APPROVED("Approved"), REJECTED("Rejected");
+        private String status;
+
+        private CtvStatus(String status) { this.status =status;}
+        public String value() {return this.status;}
+    }
 }
