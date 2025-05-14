@@ -146,8 +146,8 @@ public class UserServiceImpl implements UserService {
                     user.setRole(Constant.UserRole.ROLE_CTV.value());
 
                 } else {
-//                    ctv.setStatus(Constant.CtvStatus.REJECTED.value());
-                    ctvDao.delete(ctv);
+                    ctv.setStatus(Constant.CtvStatus.REJECTED.value());
+//                    ctvDao.delete(ctv);
                     user.setStatus(Constant.ActiveStatus.DEACTIVATED.value());
                 }
 
