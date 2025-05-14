@@ -1,6 +1,10 @@
 package com.example.Jewelry.service.ServiceImpl;
 
+import com.example.Jewelry.Utility.Constant;
+import com.example.Jewelry.dao.CtvDAO;
 import com.example.Jewelry.dao.UserDAO;
+import com.example.Jewelry.dto.request.RegisterCTVRequest;
+import com.example.Jewelry.entity.CTV;
 import com.example.Jewelry.entity.ConfirmationToken;
 import com.example.Jewelry.entity.User;
 import com.example.Jewelry.service.UserService;
@@ -17,7 +21,8 @@ import java.util.UUID;
 public class UserServiceImpl implements UserService {
     @Autowired
     private UserDAO userDao;
-
+    @Autowired
+    private CtvDAO ctvDao;
     @Autowired
     private ConfirmationTokenService confirmationTokenService;
 
@@ -95,13 +100,64 @@ public class UserServiceImpl implements UserService {
         return userDao.activeUser(email);
     }
 
-    @Override
-    public List<User> getAllMentors() {
-        return userDao.findAllMentors();
-    }
 
     @Override
     public List<User> getAllUser() {
         return userDao.findAll();
     }
+
+    public boolean registerCTVUser(RegisterCTVRequest request) {
+        User user = userDao.findByEmailId(request.getEmail());
+        if (user == null || user.getRole().equals(Constant.UserRole.ROLE_CTV.value())) {
+            return false; // user chưa tồn tại hoặc đã là CTV
+        }
+
+        // Cập nhật thông tin người dùng cơ bản
+        user.setFirstName(request.getFirstName());
+        user.setLastName(request.getLastName());
+        user.setPhoneNo(request.getPhoneNo());
+        user.setStatus(Constant.ActiveStatus.DEACTIVATED.value());
+        userDao.save(user);
+
+        CTV profile = new CTV();
+        profile.setUser(user);
+        profile.setPhoneNo(request.getPhoneNo());
+        profile.setLocation(request.getLocation());
+        profile.setExperienceAndSkills(request.getExperienceAndSkills());
+        profile.setSampleWorkLink(request.getSampleWorkLink());
+        profile.setReason(request.getReason());
+        profile.setCreatedAt(LocalDateTime.now());
+        profile.setStatus(Constant.CtvStatus.PENDING.value());
+        ctvDao.save(profile);
+        return true;
+    }
+
+    public boolean updateCTVStatus(int userId, boolean isConfirmed) {
+        Optional<User> userOptional = userDao.findById(userId);
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+
+            Optional<CTV> ctvOptional = ctvDao.findByUser(user);
+            if (ctvOptional.isPresent()) {
+                CTV ctv = ctvOptional.get();
+                if (isConfirmed) {
+                    ctv.setStatus(Constant.CtvStatus.APPROVED.value());
+                    user.setStatus(Constant.ActiveStatus.ACTIVE.value());
+                    user.setRole(Constant.UserRole.ROLE_CTV.value());
+
+                } else {
+                    ctv.setStatus(Constant.CtvStatus.REJECTED.value());
+//                    ctvDao.delete(ctv);
+                    user.setStatus(Constant.ActiveStatus.DEACTIVATED.value());
+                }
+
+                ctvDao.save(ctv);
+                userDao.save(user);
+                return true;
+            }
+        }
+        return false;
+    }
+
+
 }

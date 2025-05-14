@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class RegisterUserRequestDTO {
+public class RegisterUserRequest {
     private String username;
 
     private String firstName;
@@ -40,7 +40,7 @@ public class RegisterUserRequestDTO {
 
     private String oauth2_provider;
 
-    public static User toUserEntity(RegisterUserRequestDTO request) {
+    public static User toUserEntity(RegisterUserRequest request) {
         User user = new User();
         BeanUtils.copyProperties(request, user);
         return user;

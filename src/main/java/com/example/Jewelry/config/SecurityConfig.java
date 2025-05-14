@@ -8,16 +8,16 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -39,13 +39,14 @@ public class SecurityConfig {
         return new CustomUserDetailsService();
     }
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-
-        http.csrf(csrf -> csrf.disable()).cors(cors -> cors.disable())
-
-                .authorizeHttpRequests(auth -> auth.requestMatchers("/api/user/login", "/api/user/register", "/api/user/confirm", "api/user/resend-confirmation").permitAll()
-
+//    @Bean
+//    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+//
+//        http.csrf(csrf -> csrf.disable())
+//                .cors(cors -> cors.disable())
+//
+//                .authorizeHttpRequests(auth -> auth.requestMatchers("/api/user/login", "/api/user/register", "/api/user/confirm", "/api/user/resend-confirmation").permitAll()
+//
 ////						// this APIs are only accessible by ADMIN
 //                        .requestMatchers("/api/user/admin/register", "/api/user/delete/seller", "/api/order/fetch/all",
 //                                "/api/category/update", "/api/category/add", "/api/category/delete",
@@ -57,25 +58,42 @@ public class SecurityConfig {
 //                                "/api/product/update/detail", "/api/product/add", "/api/product/delete",
 //                                "/api/order/assign/delivery-person", "/api/order/fetch/seller-wise",
 //                                "/api/product/review/seller")
-//                        .hasAuthority(Constant.UserRole.ROLE_MENTOR.value())
+//                        .hasAuthority(Constant.UserRole.ROLE_CTV.value())
 ////
 ////						// this APIs are only accessible by SELLER
 //                        .requestMatchers("/api/order/add", "/api/order/fetch/user-wise", "/api/cart/update",
 //                                "/api/cart/add", "/api/cart/fetch", "/api/cart/delete", "/api/product/review/add")
-//                        .hasAuthority(Constant.UserRole.ROLE_STUDENT.value())
+//                        .hasAuthority(Constant.UserRole.ROLE_USER.value())
 ////
 ////						// this APIs are only accessible by ADMIN & SELLER
 //                        .requestMatchers("/api/user/fetch/role-wise", "/api/user/update/status")
 //                        .hasAnyAuthority(Constant.UserRole.ROLE_ADMIN.value())
+//
+//                        .anyRequest().permitAll())
+//
+//                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+//
+//        http.addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class);
+//
+//        return http.build();
+//
+//    }
 
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+
+        http.csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.disable())
+
+                .authorizeHttpRequests(auth -> auth.requestMatchers("/api/user/login", "/api/user/register", "/api/user/confirm", "/api/user/resend-confirmation").permitAll()
+
+                        // Add other authorization rules
                         .anyRequest().permitAll())
+                        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-
-        http.addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class);
+//        http.addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
-
     }
 
     @Bean
@@ -96,7 +114,7 @@ public class SecurityConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins("http://localhost:3000")
+                        .allowedOrigins("http://localhost:3000")  // Đảm bảo cho phép frontend FE
                         .allowedMethods("GET", "POST", "PUT", "DELETE")
                         .allowedHeaders("*")
                         .allowCredentials(true);

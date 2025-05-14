@@ -124,7 +124,7 @@ public class StorageServiceImpl implements StorageService {
     }
 
     @Override
-    public Resource loadCourseNote(String fileName) {
+    public Resource loadCategoryImage(String fileName) {
         File filePath = new File(COURSE_NOTE_BASEPATH, fileName);
         if (!filePath.exists()) {
             System.err.println("File not found: " + filePath.getAbsolutePath());

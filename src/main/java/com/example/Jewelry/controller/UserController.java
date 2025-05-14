@@ -1,9 +1,13 @@
 package com.example.Jewelry.controller;
 
+import com.example.Jewelry.Utility.Constant;
+import com.example.Jewelry.dao.CtvDAO;
+import com.example.Jewelry.dto.request.RegisterCTVRequest;
 import com.example.Jewelry.dto.request.UserLoginRequest;
 import com.example.Jewelry.dto.response.CommonApiResponse;
-import com.example.Jewelry.dto.response.RegisterUserRequestDTO;
+import com.example.Jewelry.dto.response.RegisterUserRequest;
 import com.example.Jewelry.dto.response.UserLoginResponse;
+import com.example.Jewelry.entity.CTV;
 import com.example.Jewelry.entity.User;
 import com.example.Jewelry.resource.UserResource;
 import com.example.Jewelry.service.UserService;
@@ -15,10 +19,11 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("api/user")
-@CrossOrigin(origins = "http://localhost:8080")
+@CrossOrigin(origins = "http://localhost:3000")
 public class UserController {
     @Autowired
     UserResource userResource;
@@ -26,6 +31,8 @@ public class UserController {
     @Autowired
     UserService userService;
 
+    @Autowired
+    CtvDAO ctvDao;
     @PostMapping("/login")
     @Operation(summary = "Api to login any User")
     public ResponseEntity<UserLoginResponse> login(@RequestBody UserLoginRequest userLoginRequest) {
@@ -33,10 +40,9 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<CommonApiResponse> register(@RequestBody RegisterUserRequestDTO request){
+    public ResponseEntity<CommonApiResponse> register(@RequestBody RegisterUserRequest request){
         return userResource.registerUser(request);
     }
-
 
     @GetMapping(path = "/confirm")
     public ResponseEntity<CommonApiResponse> confirm(@RequestParam("token") String token) {
@@ -83,6 +89,45 @@ public class UserController {
             return ResponseEntity.status(500).body(response);
         }
     }
+    @PostMapping("/register-ctv")
+    public ResponseEntity<CommonApiResponse> registerCTV(@RequestBody RegisterCTVRequest request) {
+        return userResource.registerCTV(request);
+    }
+    @PostMapping("/{id}/confirm-CTV")
+    public ResponseEntity<CommonApiResponse> confirmCTV(@PathVariable int id, @RequestParam boolean isConfirmed) {
+        boolean result = userService.updateCTVStatus(id, isConfirmed);
+        CommonApiResponse response = new CommonApiResponse();
+        if (result) {
+            response.setSuccess(true);
+            response.setResponseMessage(isConfirmed ? "User đã được cấp quyền CTV." : "Yêu cầu đã bị từ chối.");
+        } else {
+            response.setSuccess(false);
+            response.setResponseMessage("Không thể cập nhật trạng thái.");
+        }
+        return ResponseEntity.ok(response);
+    }
 
+    @GetMapping("/ctv-pending")
+    @Operation(summary = "List pending CTV registrations")
+    public ResponseEntity<List<RegisterCTVRequest>> getPendingCTV() {
+        List<CTV> pendingProfiles = ctvDao.findByStatus(Constant.CtvStatus.PENDING.value());
+
+        List<RegisterCTVRequest> result = pendingProfiles.stream().map(ctv -> {
+            User user = ctv.getUser();
+            return new RegisterCTVRequest(
+                    user.getId(),
+                    user.getEmailId(),
+                    user.getFirstName(),
+                    user.getLastName(),
+                    user.getPhoneNo(),
+                    ctv.getLocation(),
+                    ctv.getExperienceAndSkills(),
+                    ctv.getSampleWorkLink(),
+                    ctv.getReason()
+            );
+        }).collect(Collectors.toList());
+
+        return ResponseEntity.ok(result);
+    }
 
 }

@@ -1,5 +1,4 @@
-package com.lms_backend.lms_project.config;
-
+package com.example.Jewelry.config;
 
 import java.util.Arrays;
 
@@ -35,7 +34,7 @@ public class WebConfig {
     private static CorsConfiguration getCorsConfiguration() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
-        config.addAllowedOrigin("http://localhost:5173");
+        config.addAllowedOrigin("http://localhost:3000");
         config.setAllowedHeaders(Arrays.asList(
                 HttpHeaders.AUTHORIZATION,
                 HttpHeaders.CONTENT_TYPE,

@@ -1,4 +1,4 @@
-package com.lms_backend.lms_project.config;
+package com.example.Jewelry.config;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
