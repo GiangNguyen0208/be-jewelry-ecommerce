@@ -1,4 +1,4 @@
-package com.example.Jewelry.dto.response;
+package com.example.Jewelry.dto.request;
 
 import com.example.Jewelry.entity.User;
 import lombok.AllArgsConstructor;
