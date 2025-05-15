@@ -15,5 +15,7 @@ public interface ProductDAO extends JpaRepository<Product, Integer> {
 
     List<Product> findByStatusOrderByIdDesc(String status);
 
+    List<Product> findByDeletedFalse();
+    List<Product> findByDeletedTrue();
 
 }

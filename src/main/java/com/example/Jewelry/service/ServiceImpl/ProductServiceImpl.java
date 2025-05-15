@@ -1,11 +1,15 @@
 package com.example.Jewelry.service.ServiceImpl;
 
 import com.example.Jewelry.dao.ProductDAO;
+import com.example.Jewelry.dto.ProductDTO;
+import com.example.Jewelry.dto.response.CategoryResponseDTO;
+import com.example.Jewelry.dto.response.CommonApiResponse;
 import com.example.Jewelry.entity.Category;
 import com.example.Jewelry.entity.Product;
 import com.example.Jewelry.entity.User;
 import com.example.Jewelry.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,9 +21,9 @@ public class ProductServiceImpl implements ProductService {
     private ProductDAO productDAO;
 
     @Override
-    public Product add(Product course) {
+    public Product add(Product product) {
         // TODO Auto-generated method stub
-        return productDAO.save(course);
+        return productDAO.save(product);
     }
 
     @Override
@@ -63,6 +67,21 @@ public class ProductServiceImpl implements ProductService {
     public List<Product> getByNameAndStatus(String name, String status) {
         // TODO Auto-generated method stub
         return productDAO.findByStatusAndNameContainingIgnoreCaseOrderByIdDesc(status, name);
+    }
+
+    @Override
+    public List<Product> fetchAllProductDeleteTrue() {
+        return this.productDAO.findByDeletedTrue();
+    }
+
+    @Override
+    public List<Product> fetchAllProductDeleteFalse() {
+        return this.productDAO.findByDeletedFalse();
+    }
+
+    @Override
+    public void deleteProduct(int productId) {
+        this.productDAO.deleteById(productId);
     }
 
     @Override

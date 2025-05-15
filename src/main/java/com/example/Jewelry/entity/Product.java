@@ -33,10 +33,8 @@ public class Product {
     @Column(name = "brand")
     private String brand;
 
-    @ElementCollection
-    @CollectionTable(name = "images", joinColumns = @JoinColumn(name = "product_id"))
-    @Column(name = "image_url")
-    private List<String> images;
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Image> images;
 
     @Column(name = "size")
     private String size;

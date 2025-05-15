@@ -22,10 +22,10 @@ public class StorageServiceImpl implements StorageService {
     private String PROFILE_PIC_BASEPATH;
 
     @Value("${com.lms.course.video.folder.path}")
-    private String COURSE_VIDEO_BASEPATH;
+    private String PRODUCT_BASEPATH;
 
     @Value("${com.lms.course.notes.folder.path}")
-    private String COURSE_NOTE_BASEPATH;
+    private String CATEGORY_BASEPATH;
 
     @Override
     public List<String> loadAll() {
@@ -65,18 +65,18 @@ public class StorageServiceImpl implements StorageService {
     }
 
     @Override
-    public List<String> loadAllCourseVideo() {
-        File dirPath = new File(COURSE_VIDEO_BASEPATH);
+    public List<String> loadAllProductImage() {
+        File dirPath = new File(PRODUCT_BASEPATH);
         return Arrays.asList(dirPath.list());
     }
 
     @Override
-    public String storeCourseVideo(MultipartFile file) {
+    public String storeProductImage(MultipartFile file) {
 
         String ext = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
 
         String fileName = UUID.randomUUID().toString().replaceAll("-", "") + ext;
-        File filePath = new File(COURSE_VIDEO_BASEPATH, fileName);
+        File filePath = new File(PRODUCT_BASEPATH, fileName);
         try (FileOutputStream out = new FileOutputStream(filePath)) {
             FileCopyUtils.copy(file.getInputStream(), out);
             return fileName;
@@ -87,33 +87,33 @@ public class StorageServiceImpl implements StorageService {
     }
 
     @Override
-    public Resource loadCourseVideo(String fileName) {
-        File filePath = new File(COURSE_VIDEO_BASEPATH, fileName);
+    public Resource loadProductImage(String fileName) {
+        File filePath = new File(PRODUCT_BASEPATH, fileName);
         if (filePath.exists())
             return new FileSystemResource(filePath);
         return null;
     }
 
     @Override
-    public void deleteCourseVideo(String fileName) {
-        File filePath = new File(COURSE_VIDEO_BASEPATH, fileName);
+    public void deleteProductImage(String fileName) {
+        File filePath = new File(PRODUCT_BASEPATH, fileName);
         if (filePath.exists())
             filePath.delete();
     }
 
     @Override
-    public List<String> loadAllCourseNote() {
-        File dirPath = new File(COURSE_NOTE_BASEPATH);
+    public List<String> loadAllCategoryImage() {
+        File dirPath = new File(CATEGORY_BASEPATH);
         return Arrays.asList(dirPath.list());
     }
 
     @Override
-    public String storeCourseNote(MultipartFile file) {
+    public String storeCategoryImage(MultipartFile file) {
 
         String ext = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
 
         String fileName = UUID.randomUUID().toString().replaceAll("-", "") + ext;
-        File filePath = new File(COURSE_NOTE_BASEPATH, fileName);
+        File filePath = new File(CATEGORY_BASEPATH, fileName);
         try (FileOutputStream out = new FileOutputStream(filePath)) {
             FileCopyUtils.copy(file.getInputStream(), out);
             return fileName;
@@ -125,7 +125,7 @@ public class StorageServiceImpl implements StorageService {
 
     @Override
     public Resource loadCategoryImage(String fileName) {
-        File filePath = new File(COURSE_NOTE_BASEPATH, fileName);
+        File filePath = new File(CATEGORY_BASEPATH, fileName);
         if (!filePath.exists()) {
             System.err.println("File not found: " + filePath.getAbsolutePath());
             return null;
@@ -134,8 +134,8 @@ public class StorageServiceImpl implements StorageService {
     }
 
     @Override
-    public void deleteCourseNote(String fileName) {
-        File filePath = new File(COURSE_NOTE_BASEPATH, fileName);
+    public void deleteCategoryImage(String fileName) {
+        File filePath = new File(CATEGORY_BASEPATH, fileName);
         if (filePath.exists())
             filePath.delete();
     }

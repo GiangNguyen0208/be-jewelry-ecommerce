@@ -70,7 +70,7 @@ public class CategoryResource {
         }
 
         LocalDateTime now = LocalDateTime.now();
-        String thumbnailFilename = this.storageService.storeCourseNote(request.getThumbnail());
+        String thumbnailFilename = this.storageService.storeCategoryImage(request.getThumbnail());
         Category category = Category.builder()
                 .name(request.getName())
                 .thumbnail(thumbnailFilename)
@@ -119,7 +119,7 @@ public class CategoryResource {
         }
 
         // Cập nhật thông tin category
-        String thumbnailFilename = this.storageService.storeCourseNote(request.getThumbnail());
+        String thumbnailFilename = this.storageService.storeCategoryImage(request.getThumbnail());
         existingCategory.setName(request.getName());
         existingCategory.setThumbnail(thumbnailFilename);
         existingCategory.setStatus(request.getStatus());

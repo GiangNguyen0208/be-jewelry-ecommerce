@@ -2,7 +2,7 @@ package com.example.Jewelry.controller;
 
 import com.example.Jewelry.dto.request.UserLoginRequest;
 import com.example.Jewelry.dto.response.CommonApiResponse;
-import com.example.Jewelry.dto.response.RegisterUserRequest;
+import com.example.Jewelry.dto.request.RegisterUserRequest;
 import com.example.Jewelry.dto.response.UserLoginResponse;
 import com.example.Jewelry.entity.User;
 import com.example.Jewelry.resource.UserResource;
