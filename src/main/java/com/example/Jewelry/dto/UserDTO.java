@@ -14,18 +14,12 @@ import org.springframework.beans.BeanUtils;
 public class UserDTO {
     private int id;
     private String firebaseUid;
-
     private String firstName;
-
     private String lastName;
     private String emailId;
-
     private String phoneNo;
-
     private String role;
-
     private String status;
-
     private String avatar;
 
     public static UserDTO toUserDtoEntity(User user) {

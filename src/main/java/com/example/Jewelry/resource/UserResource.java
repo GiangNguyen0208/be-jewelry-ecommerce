@@ -3,12 +3,11 @@ package com.example.Jewelry.resource;
 import com.example.Jewelry.Utility.Constant;
 import com.example.Jewelry.Utility.JwtUtils;
 import com.example.Jewelry.dao.UserDAO;
-import com.example.Jewelry.dto.UserDTO;
-import com.example.Jewelry.dto.request.DeliveryAddressRequestDTO;
 import com.example.Jewelry.dto.request.UserLoginRequest;
 import com.example.Jewelry.dto.response.CommonApiResponse;
 import com.example.Jewelry.dto.response.DeliveryAddressBookResponse;
 import com.example.Jewelry.dto.response.RegisterUserRequest;
+import com.example.Jewelry.dto.response.UserDTOResponse;
 import com.example.Jewelry.dto.response.UserLoginResponse;
 import com.example.Jewelry.entity.ConfirmationToken;
 import com.example.Jewelry.entity.DeliveryAddress;
@@ -74,10 +73,7 @@ public class UserResource {
     @Autowired
     private JwtUtils jwtUtils;
 
-    /** Sổ địa chỉ */
-    @Autowired
-    private DeliveryAddressService deliveryAddressService;
-
+    /** đăng nhập */
     public ResponseEntity<UserLoginResponse> login(UserLoginRequest loginRequest) {
 
         LOG.info("Received request for User Login");
@@ -88,7 +84,7 @@ public class UserResource {
             response.setResponseMessage("Missing Input");
             response.setSuccess(false);
 
-            return new ResponseEntity<UserLoginResponse>(response, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
 
         String jwtToken = null;
@@ -100,7 +96,7 @@ public class UserResource {
             response.setResponseMessage("User with this Email Id not registered in System!!!");
             response.setSuccess(false);
 
-            return new ResponseEntity<UserLoginResponse>(response, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
 
         List<GrantedAuthority> authorities = Arrays.asList(new SimpleGrantedAuthority(user.getRole()));
@@ -111,7 +107,7 @@ public class UserResource {
         } catch (Exception ex) {
             response.setResponseMessage("Invalid email or password.");
             response.setSuccess(false);
-            return new ResponseEntity<UserLoginResponse>(response, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
 
         jwtToken = jwtUtils.generateToken(loginRequest.getEmailId());
@@ -119,30 +115,29 @@ public class UserResource {
         if (!user.getStatus().equals(Constant.ActiveStatus.ACTIVE.value())) {
             response.setResponseMessage("User is not active");
             response.setSuccess(false);
-            return new ResponseEntity<UserLoginResponse>(response, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
-
-        UserDTO userDTO = UserDTO.toUserDtoEntity(user);
 
         // user is authenticated
         if (jwtToken != null) {
-            response.setUser(userDTO);
+            response.setUserID(user.getId());
+            response.setUsername(user.getUsername());
             response.setResponseMessage("Logged in sucessful");
             response.setSuccess(true);
             response.setJwtToken(jwtToken);
-            return new ResponseEntity<UserLoginResponse>(response, HttpStatus.OK);
+            return new ResponseEntity<>(response, HttpStatus.OK);
         }
 
         else {
             response.setResponseMessage("Failed to login");
             response.setSuccess(false);
-            return new ResponseEntity<UserLoginResponse>(response, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
 
     }
 
+    /** đăng kí */
     public ResponseEntity<CommonApiResponse> registerUser(RegisterUserRequest request) {
-
         LOG.info("Request received for Register User");
 
         CommonApiResponse response = new CommonApiResponse();
@@ -158,7 +153,7 @@ public class UserResource {
             response.setResponseMessage("missing input");
             response.setSuccess(false);
 
-            return new ResponseEntity<CommonApiResponse>(response, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         }
 
         // User existed and actived.
@@ -216,6 +211,7 @@ public class UserResource {
         return new ResponseEntity<CommonApiResponse>(response, HttpStatus.OK);
     }
 
+    /** tạo chuỗi email  */
     private String buildEmail(String username, String link) {
         return "<div style=\"font-family: Arial, sans-serif; font-size: 16px; color: #333; line-height: 1.6;\">"
                 + "<h2 style=\"color: #1a73e8;\">Chào " + username + ",</h2>"
@@ -229,6 +225,7 @@ public class UserResource {
                 + "</div>";
     }
 
+    /** xác thực token */
     public ResponseEntity<CommonApiResponse> confirmToken(String token) {
         LOG.info("Confirm mail");
 
@@ -258,6 +255,7 @@ public class UserResource {
         return new ResponseEntity<CommonApiResponse>(response, HttpStatus.OK);
     }
 
+    /** gửi lại token xác thực */
     public ResponseEntity<CommonApiResponse> resendConfirmToken(String email) {
         LOG.info("Resending confirmation email for: " + email);
 
@@ -280,6 +278,7 @@ public class UserResource {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    /** lấy ảnh và lưu vào máy? */
     public void fetchUserImage(String userImageName, HttpServletResponse resp) {
         Resource resource = storageService.load(userImageName);
         if (resource != null) {
@@ -292,6 +291,7 @@ public class UserResource {
         }
     }
 
+    /** cập nhật ảnh đại diện */
     public void updateUserAvatar(int userId, MultipartFile avatarFile) {
         LOG.info("Check file avatar: " + avatarFile);
         if (avatarFile == null || avatarFile.isEmpty()) {
@@ -319,20 +319,5 @@ public class UserResource {
         userDAO.save(user);
     }
 
-    public ResponseEntity<DeliveryAddressBookResponse> getDeliveryAddresses(int userID) {
-        DeliveryAddressBookResponse response = new DeliveryAddressBookResponse();
-        User user = userService.getUserById(userID);
-        if (user == null) {
-            response.setSuccess(false);
-            response.setResponseMessage("User is not found.");
-            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-        }
-
-        List<DeliveryAddress> addresses = deliveryAddressService.getByUserID(userID);
-        response.setSuccess(true);
-        response.setResponseMessage("Lấy sổ địa chỉ thành công!");
-        response.setAddreses(addresses);
-        return new ResponseEntity<>(response, HttpStatus.OK);
-    }
 
 }
