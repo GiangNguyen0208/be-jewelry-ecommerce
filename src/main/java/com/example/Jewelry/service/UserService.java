@@ -5,9 +5,12 @@ import com.example.Jewelry.dto.request.RegisterCTVRequest;
 import com.example.Jewelry.entity.User;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface UserService {
     User addUser(User user);
+
+    User findByEmail(String email);
 
     String generateToken(User user);
 
@@ -34,4 +37,5 @@ public interface UserService {
     boolean registerCTVUser(RegisterCTVRequest request);
 
     boolean updateCTVStatus(int id, boolean isConfirmed);
+    Optional<User> verifyResetPasswordToken(String token);
 }

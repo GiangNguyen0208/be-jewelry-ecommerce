@@ -21,8 +21,10 @@ import java.util.UUID;
 public class UserServiceImpl implements UserService {
     @Autowired
     private UserDAO userDao;
+
     @Autowired
     private CtvDAO ctvDao;
+
     @Autowired
     private ConfirmationTokenService confirmationTokenService;
 
@@ -32,6 +34,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public User addUser(User user) {
         return userDao.save(user);
+    }
+
+    @Override
+    public User findByEmail(String email) {
+        return userDao.findByEmailId(email);
     }
 
     @Override
@@ -160,4 +167,21 @@ public class UserServiceImpl implements UserService {
     }
 
 
+
+    @Override
+    public Optional<User> verifyResetPasswordToken(String token) {
+        Optional<ConfirmationToken> optionalToken = confirmationTokenService.getToken(token);
+
+        if (optionalToken.isEmpty()) {
+            return Optional.empty();
+        }
+
+        ConfirmationToken confirmationToken = optionalToken.get();
+
+        if (confirmationToken.getExpiresAt().isBefore(LocalDateTime.now())) {
+            return Optional.empty();
+        }
+
+        return Optional.of(confirmationToken.getUser());
+    }
 }

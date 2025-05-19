@@ -2,10 +2,14 @@ package com.example.Jewelry.controller;
 
 import com.example.Jewelry.Utility.Constant;
 import com.example.Jewelry.dao.CtvDAO;
+import com.example.Jewelry.dao.UserDAO;
+import com.example.Jewelry.dto.UserDTO;
+import com.example.Jewelry.dto.request.ChangePasswordRequestDTO;
 import com.example.Jewelry.dto.request.RegisterCTVRequest;
 import com.example.Jewelry.dto.request.UserLoginRequest;
 import com.example.Jewelry.dto.response.CommonApiResponse;
 import com.example.Jewelry.dto.request.RegisterUserRequest;
+import com.example.Jewelry.dto.response.ImageUploadResponse;
 import com.example.Jewelry.dto.response.UserLoginResponse;
 import com.example.Jewelry.entity.CTV;
 import com.example.Jewelry.entity.User;
@@ -14,11 +18,14 @@ import com.example.Jewelry.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -33,6 +40,7 @@ public class UserController {
 
     @Autowired
     CtvDAO ctvDao;
+
     @PostMapping("/login")
     @Operation(summary = "Api to login any User")
     public ResponseEntity<UserLoginResponse> login(@RequestBody UserLoginRequest userLoginRequest) {
@@ -65,16 +73,23 @@ public class UserController {
         return ResponseEntity.ok(users);
     }
 
+    @PutMapping("/update/{userId}")
+    public ResponseEntity<CommonApiResponse> updateUserProfile(@PathVariable("userId") int userId, @RequestBody UserDTO request) {
+        return userResource.updateUserProfile(userId, request);
+    }
+
     @PostMapping("/{id}/upload-avatar")
-    public ResponseEntity<CommonApiResponse> uploadAvatar(
+    public ResponseEntity<ImageUploadResponse> uploadAvatar(
             @PathVariable int id,
             @RequestParam("avatar") MultipartFile file) {
 
-        CommonApiResponse response = new CommonApiResponse();
+        ImageUploadResponse response = new ImageUploadResponse();
+        User user = userService.getUserById(id);
 
         if (file.isEmpty()) {
             response.setResponseMessage("File is empty.");
             response.setSuccess(false);
+            response.setImageURL(user.getAvatar());
             return ResponseEntity.badRequest().body(response);
         }
 
@@ -82,10 +97,12 @@ public class UserController {
             userResource.updateUserAvatar(id, file);
             response.setResponseMessage("Avatar updated successfully");
             response.setSuccess(true);
+            response.setImageURL(user.getAvatar());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             response.setResponseMessage("Error saving avatar: " + e.getMessage());
             response.setSuccess(false);
+            response.setImageURL("");
             return ResponseEntity.status(500).body(response);
         }
     }
@@ -129,5 +146,42 @@ public class UserController {
 
         return ResponseEntity.ok(result);
     }
+    // Change Password
+    @PutMapping("/change-password")
+    @Operation(summary = "Api to change password")
+    public ResponseEntity<CommonApiResponse> changePassword(@RequestBody ChangePasswordRequestDTO request) {
+        return userResource.changePassword(request);
+    }
+
+
+    // Forget password.
+    @GetMapping("/forget-password")
+    @Operation(summary = "Api to login any User")
+    public ResponseEntity<CommonApiResponse> forgetPassword(@RequestParam String email) {
+        return userResource.forgetPassword(email);
+    }
+
+    @GetMapping("/verify-reset-token")
+    public ResponseEntity<?> verifyResetToken(@RequestParam("token") String token) {
+        Optional<User> userOpt = userService.verifyResetPasswordToken(token);
+
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Token không hợp lệ hoặc đã hết hạn.");
+        }
+
+        User user = userOpt.get();
+
+        return ResponseEntity.ok(Map.of(
+                "email", user.getEmailId(),
+                "username", user.getUsername()
+        ));
+    }
+
+    @PutMapping("/reset-password")
+    @Operation(summary = "Api to reset password")
+    public ResponseEntity<CommonApiResponse> resetPassword(@RequestBody ChangePasswordRequestDTO request) {
+        return userResource.resetPassword(request);
+    }
+
 
 }
