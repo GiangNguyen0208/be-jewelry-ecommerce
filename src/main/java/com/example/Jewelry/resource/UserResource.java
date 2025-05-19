@@ -4,6 +4,8 @@ import com.example.Jewelry.Utility.Constant;
 import com.example.Jewelry.Utility.JwtUtils;
 import com.example.Jewelry.dao.UserDAO;
 import com.example.Jewelry.dto.UserDTO;
+import com.example.Jewelry.dto.request.ChangePasswordRequestDTO;
+import com.example.Jewelry.dto.request.RegisterCTVRequest;
 import com.example.Jewelry.dto.request.UserLoginRequest;
 import com.example.Jewelry.dto.response.CommonApiResponse;
 import com.example.Jewelry.dto.request.RegisterUserRequest;
@@ -39,6 +41,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 @Transactional
@@ -398,6 +401,7 @@ public class UserResource {
     }
 
     public ResponseEntity<CommonApiResponse> changePassword(ChangePasswordRequestDTO request) {
+
         CommonApiResponse response = new CommonApiResponse();
 
         User user = userService.getUserById(request.getUserId());
@@ -424,5 +428,42 @@ public class UserResource {
         response.setSuccess(true);
         response.setResponseMessage("Mật khẩu đã được thay đổi thành công.");
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    public ResponseEntity<CommonApiResponse> updateUserProfile(int userId, UserDTO request) {
+        LOG.info("🔒 Received request for update user with ID: " + userId);
+        CommonApiResponse response = new CommonApiResponse();
+
+        Optional<User> userOptional = userDAO.findById(userId);
+
+        if (userOptional == null) {
+            response.setSuccess(false);
+            response.setResponseMessage("User is not existing");
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        }
+
+        if (request == null) {
+            response.setSuccess(false);
+            response.setResponseMessage("User request update is null");
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        }
+
+        User user = userOptional.get();
+
+        // Ví dụ cập nhật giá trị (tuỳ mục đích thực tế)
+        user.setFirstName(request.getFirstName());
+        user.setLastName(request.getLastName());
+        user.setEmailId(request.getEmailId());
+        user.setPhoneNo(request.getPhoneNo());
+        user.setGender(request.getGender()); // hoặc lấy từ request DTO nếu có
+        user.setUpdateAt(LocalDateTime.now());
+
+        userDAO.save(user);
+
+        response.setSuccess(true);
+        response.setResponseMessage("User profile updated successfully");
+        return new ResponseEntity<>(response, HttpStatus.OK);
+
+
     }
 }

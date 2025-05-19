@@ -1,6 +1,10 @@
 package com.example.Jewelry.service.ServiceImpl;
 
+import com.example.Jewelry.Utility.Constant;
+import com.example.Jewelry.dao.CtvDAO;
 import com.example.Jewelry.dao.UserDAO;
+import com.example.Jewelry.dto.request.RegisterCTVRequest;
+import com.example.Jewelry.entity.CTV;
 import com.example.Jewelry.entity.ConfirmationToken;
 import com.example.Jewelry.entity.User;
 import com.example.Jewelry.service.UserService;
@@ -17,6 +21,9 @@ import java.util.UUID;
 public class UserServiceImpl implements UserService {
     @Autowired
     private UserDAO userDao;
+
+    @Autowired
+    private CtvDAO ctvDao;
 
     @Autowired
     private ConfirmationTokenService confirmationTokenService;

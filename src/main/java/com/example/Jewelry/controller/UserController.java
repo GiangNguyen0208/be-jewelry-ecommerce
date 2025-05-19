@@ -1,20 +1,32 @@
 package com.example.Jewelry.controller;
 
+import com.example.Jewelry.Utility.Constant;
+import com.example.Jewelry.dao.CtvDAO;
+import com.example.Jewelry.dao.UserDAO;
+import com.example.Jewelry.dto.UserDTO;
+import com.example.Jewelry.dto.request.ChangePasswordRequestDTO;
+import com.example.Jewelry.dto.request.RegisterCTVRequest;
 import com.example.Jewelry.dto.request.UserLoginRequest;
 import com.example.Jewelry.dto.response.CommonApiResponse;
 import com.example.Jewelry.dto.request.RegisterUserRequest;
+import com.example.Jewelry.dto.response.ImageUploadResponse;
 import com.example.Jewelry.dto.response.UserLoginResponse;
+import com.example.Jewelry.entity.CTV;
 import com.example.Jewelry.entity.User;
 import com.example.Jewelry.resource.UserResource;
 import com.example.Jewelry.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("api/user")
@@ -25,6 +37,9 @@ public class UserController {
 
     @Autowired
     UserService userService;
+
+    @Autowired
+    CtvDAO ctvDao;
 
     @PostMapping("/login")
     @Operation(summary = "Api to login any User")
@@ -58,16 +73,23 @@ public class UserController {
         return ResponseEntity.ok(users);
     }
 
+    @PutMapping("/update/{userId}")
+    public ResponseEntity<CommonApiResponse> updateUserProfile(@PathVariable("userId") int userId, @RequestBody UserDTO request) {
+        return userResource.updateUserProfile(userId, request);
+    }
+
     @PostMapping("/{id}/upload-avatar")
-    public ResponseEntity<CommonApiResponse> uploadAvatar(
+    public ResponseEntity<ImageUploadResponse> uploadAvatar(
             @PathVariable int id,
             @RequestParam("avatar") MultipartFile file) {
 
-        CommonApiResponse response = new CommonApiResponse();
+        ImageUploadResponse response = new ImageUploadResponse();
+        User user = userService.getUserById(id);
 
         if (file.isEmpty()) {
             response.setResponseMessage("File is empty.");
             response.setSuccess(false);
+            response.setImageURL(user.getAvatar());
             return ResponseEntity.badRequest().body(response);
         }
 
@@ -75,10 +97,12 @@ public class UserController {
             userResource.updateUserAvatar(id, file);
             response.setResponseMessage("Avatar updated successfully");
             response.setSuccess(true);
+            response.setImageURL(user.getAvatar());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             response.setResponseMessage("Error saving avatar: " + e.getMessage());
             response.setSuccess(false);
+            response.setImageURL("");
             return ResponseEntity.status(500).body(response);
         }
     }

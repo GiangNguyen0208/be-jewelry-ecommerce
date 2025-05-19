@@ -13,6 +13,8 @@ import org.springframework.beans.BeanUtils;
 @AllArgsConstructor
 public class UserDTO {
     private int id;
+
+    private String gender;
     private String firebaseUid;
 
     private String firstName;
