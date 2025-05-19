@@ -4,6 +4,7 @@ import com.example.Jewelry.Utility.Constant;
 import com.example.Jewelry.Utility.JwtUtils;
 import com.example.Jewelry.dao.UserDAO;
 import com.example.Jewelry.dto.UserDTO;
+import com.example.Jewelry.dto.request.ChangePasswordRequestDTO;
 import com.example.Jewelry.dto.request.UserLoginRequest;
 import com.example.Jewelry.dto.response.CommonApiResponse;
 import com.example.Jewelry.dto.request.RegisterUserRequest;
@@ -39,6 +40,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 @Transactional
@@ -220,6 +222,17 @@ public class UserResource {
                 + "</div>";
     }
 
+    private String buildMailResetPassword(String username, String link) {
+        return "<div style=\"font-family: Arial, sans-serif; font-size: 16px; color: #333; line-height: 1.6;\">"
+                + "<h2 style=\"color: #1a73e8;\">Chào " + username + ",</h2>"
+                + "<p>Vui lòng xác nhận đổi mật khẩu bằng cách nhấn vào nút bên dưới:</p>"
+                + "<p style=\"text-align: center;\">"
+                + "<a href=\"" + link + "\" style=\"display: inline-block; padding: 12px 24px; color: #fff; background-color: #1a73e8; text-decoration: none; border-radius: 5px; font-weight: bold;\">Xác nhận email</a>"
+                + "</p>"
+                + "<p>Trân trọng,<br><strong>Đội ngũ hỗ trợ LMS</strong></p>"
+                + "</div>";
+    }
+
     public ResponseEntity<CommonApiResponse> confirmToken(String token) {
         LOG.info("Confirm mail");
 
@@ -262,7 +275,7 @@ public class UserResource {
         }
 
         String token = userService.generateToken(user);
-        String frontendUrl = "http://localhost:5173/verify-email?token=" + token;
+        String frontendUrl = "http://localhost:3000/verify-email?token=" + token;
 
         emailService.send(user.getEmailId(), buildEmail(user.getUsername(), frontendUrl));
 
@@ -310,4 +323,93 @@ public class UserResource {
         userDAO.save(user);
     }
 
+    public ResponseEntity<CommonApiResponse> forgetPassword(String email) {
+        LOG.info("🔒 Received request for password reset for email: {}", email);
+
+        CommonApiResponse response = new CommonApiResponse();
+
+        if (email == null || email.trim().isEmpty()) {
+            response.setResponseMessage("Email is required.");
+            response.setSuccess(false);
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        User user = userService.findByEmail(email);
+        if (user == null) {
+            response.setResponseMessage("No user found with this email.");
+            response.setSuccess(false);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+
+        // Generate reset token (JWT or UUID)
+        String token = userService.generateToken(user);
+        String resetUrl = "http://localhost:5173/reset-password?token=" + token;
+
+        // Send email
+        emailService.send(
+                user.getEmailId(),
+                buildMailResetPassword(user.getUsername(), resetUrl)
+        );
+
+        response.setResponseMessage("Password reset email has been sent. Please check your inbox.");
+        response.setSuccess(true);
+        return ResponseEntity.ok(response);
+    }
+
+    public ResponseEntity<CommonApiResponse> resetPassword(ChangePasswordRequestDTO request) {
+        CommonApiResponse response = new CommonApiResponse();
+
+        Optional<User> userOpt = userService.verifyResetPasswordToken(request.getToken());
+
+        if (userOpt.isEmpty()) {
+            response.setSuccess(false);
+            response.setResponseMessage("Token không hợp lệ hoặc đã hết hạn.");
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+
+        User user = userOpt.get();
+
+        // Encode mật khẩu mới
+        String encodedPassword = passwordEncoder.encode(request.getNewPassword());
+        user.setPassword(encodedPassword);
+
+        // Lưu lại người dùng
+        userService.addUser(user);
+
+        // (Tùy chọn) Cập nhật thời gian xác nhận token
+        confirmationTokenService.setConfirmedAt(request.getToken());
+
+        response.setSuccess(true);
+        response.setResponseMessage("Mật khẩu đã được thay đổi thành công.");
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    public ResponseEntity<CommonApiResponse> changePassword(ChangePasswordRequestDTO request) {
+        CommonApiResponse response = new CommonApiResponse();
+
+        User user = userService.getUserById(request.getUserId());
+
+        if (user == null) {
+            response.setSuccess(false);
+            response.setResponseMessage("User is not existing");
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        }
+
+        if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
+            response.setSuccess(false);
+            response.setResponseMessage("Mật khẩu không chính xác");
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+
+        // Encode mật khẩu mới
+        String encodedPassword = passwordEncoder.encode(request.getNewPassword());
+        user.setPassword(encodedPassword);
+
+        // Lưu lại người dùng
+        userService.addUser(user);
+
+        response.setSuccess(true);
+        response.setResponseMessage("Mật khẩu đã được thay đổi thành công.");
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
 }

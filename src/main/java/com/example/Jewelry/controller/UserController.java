@@ -1,5 +1,6 @@
 package com.example.Jewelry.controller;
 
+import com.example.Jewelry.dto.request.ChangePasswordRequestDTO;
 import com.example.Jewelry.dto.request.UserLoginRequest;
 import com.example.Jewelry.dto.response.CommonApiResponse;
 import com.example.Jewelry.dto.request.RegisterUserRequest;
@@ -10,11 +11,14 @@ import com.example.Jewelry.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("api/user")
@@ -81,6 +85,43 @@ public class UserController {
             response.setSuccess(false);
             return ResponseEntity.status(500).body(response);
         }
+    }
+
+    // Change Password
+    @PutMapping("/change-password")
+    @Operation(summary = "Api to change password")
+    public ResponseEntity<CommonApiResponse> changePassword(@RequestBody ChangePasswordRequestDTO request) {
+        return userResource.changePassword(request);
+    }
+
+
+    // Forget password.
+    @GetMapping("/forget-password")
+    @Operation(summary = "Api to login any User")
+    public ResponseEntity<CommonApiResponse> forgetPassword(@RequestParam String email) {
+        return userResource.forgetPassword(email);
+    }
+
+    @GetMapping("/verify-reset-token")
+    public ResponseEntity<?> verifyResetToken(@RequestParam("token") String token) {
+        Optional<User> userOpt = userService.verifyResetPasswordToken(token);
+
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Token không hợp lệ hoặc đã hết hạn.");
+        }
+
+        User user = userOpt.get();
+
+        return ResponseEntity.ok(Map.of(
+                "email", user.getEmailId(),
+                "username", user.getUsername()
+        ));
+    }
+
+    @PutMapping("/reset-password")
+    @Operation(summary = "Api to reset password")
+    public ResponseEntity<CommonApiResponse> resetPassword(@RequestBody ChangePasswordRequestDTO request) {
+        return userResource.resetPassword(request);
     }
 
 

@@ -30,6 +30,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public User findByEmail(String email) {
+        return userDao.findByEmailId(email);
+    }
+
+    @Override
     public String generateToken(User user) {
         ConfirmationToken confirmationToken = new ConfirmationToken();
         confirmationToken.setUser(user);
@@ -99,5 +104,22 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<User> getAllUser() {
         return userDao.findAll();
+    }
+
+    @Override
+    public Optional<User> verifyResetPasswordToken(String token) {
+        Optional<ConfirmationToken> optionalToken = confirmationTokenService.getToken(token);
+
+        if (optionalToken.isEmpty()) {
+            return Optional.empty();
+        }
+
+        ConfirmationToken confirmationToken = optionalToken.get();
+
+        if (confirmationToken.getExpiresAt().isBefore(LocalDateTime.now())) {
+            return Optional.empty();
+        }
+
+        return Optional.of(confirmationToken.getUser());
     }
 }
