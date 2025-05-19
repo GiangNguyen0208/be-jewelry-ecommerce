@@ -4,7 +4,6 @@ import com.example.Jewelry.Utility.Constant;
 import com.example.Jewelry.Utility.JwtUtils;
 import com.example.Jewelry.dao.UserDAO;
 import com.example.Jewelry.dto.UserDTO;
-import com.example.Jewelry.dto.request.ChangePasswordRequestDTO;
 import com.example.Jewelry.dto.request.UserLoginRequest;
 import com.example.Jewelry.dto.response.CommonApiResponse;
 import com.example.Jewelry.dto.request.RegisterUserRequest;
@@ -40,7 +39,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 @Component
 @Transactional
@@ -275,7 +273,7 @@ public class UserResource {
         }
 
         String token = userService.generateToken(user);
-        String frontendUrl = "http://localhost:3000/verify-email?token=" + token;
+        String frontendUrl = "http://localhost:5173/verify-email?token=" + token;
 
         emailService.send(user.getEmailId(), buildEmail(user.getUsername(), frontendUrl));
 
@@ -323,6 +321,21 @@ public class UserResource {
         userDAO.save(user);
     }
 
+    public ResponseEntity<CommonApiResponse> registerCTV(RegisterCTVRequest request) {
+        CommonApiResponse response = new CommonApiResponse();
+
+        boolean success = userService.registerCTVUser(request);
+
+        if (success) {
+            response.setSuccess(true);
+            response.setResponseMessage("Yêu cầu đăng ký CTV đã được gửi, vui lòng chờ phản hồi từ ADMIN.");
+            return ResponseEntity.ok(response);
+        } else {
+            response.setSuccess(false);
+            response.setResponseMessage("Yêu cầu không thành công, hãy kiểm tra lại địa chỉ email.");
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
     public ResponseEntity<CommonApiResponse> forgetPassword(String email) {
         LOG.info("🔒 Received request for password reset for email: {}", email);
 

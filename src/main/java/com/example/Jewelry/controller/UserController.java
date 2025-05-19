@@ -1,6 +1,5 @@
 package com.example.Jewelry.controller;
 
-import com.example.Jewelry.dto.request.ChangePasswordRequestDTO;
 import com.example.Jewelry.dto.request.UserLoginRequest;
 import com.example.Jewelry.dto.response.CommonApiResponse;
 import com.example.Jewelry.dto.request.RegisterUserRequest;
@@ -11,14 +10,11 @@ import com.example.Jewelry.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("api/user")
@@ -86,7 +82,46 @@ public class UserController {
             return ResponseEntity.status(500).body(response);
         }
     }
+    @PostMapping("/register-ctv")
+    public ResponseEntity<CommonApiResponse> registerCTV(@RequestBody RegisterCTVRequest request) {
+        return userResource.registerCTV(request);
+    }
+    @PostMapping("/{id}/confirm-CTV")
+    public ResponseEntity<CommonApiResponse> confirmCTV(@PathVariable int id, @RequestParam boolean isConfirmed) {
+        boolean result = userService.updateCTVStatus(id, isConfirmed);
+        CommonApiResponse response = new CommonApiResponse();
+        if (result) {
+            response.setSuccess(true);
+            response.setResponseMessage(isConfirmed ? "User đã được cấp quyền CTV." : "Yêu cầu đã bị từ chối.");
+        } else {
+            response.setSuccess(false);
+            response.setResponseMessage("Không thể cập nhật trạng thái.");
+        }
+        return ResponseEntity.ok(response);
+    }
 
+    @GetMapping("/ctv-pending")
+    @Operation(summary = "List pending CTV registrations")
+    public ResponseEntity<List<RegisterCTVRequest>> getPendingCTV() {
+        List<CTV> pendingProfiles = ctvDao.findByStatus(Constant.CtvStatus.PENDING.value());
+
+        List<RegisterCTVRequest> result = pendingProfiles.stream().map(ctv -> {
+            User user = ctv.getUser();
+            return new RegisterCTVRequest(
+                    user.getId(),
+                    user.getEmailId(),
+                    user.getFirstName(),
+                    user.getLastName(),
+                    user.getPhoneNo(),
+                    ctv.getLocation(),
+                    ctv.getExperienceAndSkills(),
+                    ctv.getSampleWorkLink(),
+                    ctv.getReason()
+            );
+        }).collect(Collectors.toList());
+
+        return ResponseEntity.ok(result);
+    }
     // Change Password
     @PutMapping("/change-password")
     @Operation(summary = "Api to change password")
