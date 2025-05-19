@@ -4,10 +4,12 @@ import com.example.Jewelry.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-
+import java.util.Optional;
+@Repository
 public interface UserDAO extends JpaRepository<User, Integer> {
     User findByEmailId(String email);
 
@@ -21,11 +23,11 @@ public interface UserDAO extends JpaRepository<User, Integer> {
 
     List<User> findByRoleAndStatus(String role, String status);
 
+    Optional<User> findById(Integer id);
     @Transactional
     @Modifying
     @Query("UPDATE User a SET a.status = 'Active' WHERE a.emailId = ?1")
     int activeUser(String email);
-
 
 
 }

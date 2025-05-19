@@ -18,21 +18,21 @@ public interface StorageService {
     void delete(String fileName);
 
     // Course Videos
-    List<String> loadAllCourseVideo();
+    List<String> loadAllProductImage();
 
-    String storeCourseVideo(MultipartFile file);
+    String storeProductImage(MultipartFile file);
 
-    Resource loadCourseVideo(String fileName);
+    Resource loadProductImage(String fileName);
 
-    void deleteCourseVideo(String fileName);
+    void deleteProductImage(String fileName);
 
-    // Course Note
-    List<String> loadAllCourseNote();
+    // Category Image
+    List<String> loadAllCategoryImage();
 
-    String storeCourseNote(MultipartFile file);
+    String storeCategoryImage(MultipartFile file);
 
     Resource loadCategoryImage(String fileName);
 
-    void deleteCourseNote(String fileName);
+    void deleteCategoryImage(String fileName);
 
 }
