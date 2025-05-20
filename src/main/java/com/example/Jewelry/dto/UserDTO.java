@@ -12,8 +12,8 @@ import org.springframework.beans.BeanUtils;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserDTO {
-    private int id;
 
+    private int id;
     private String gender;
     private String firebaseUid;
     private String firstName;

@@ -18,49 +18,27 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AddProductRequestDTO {
+
     private int id;
-
     private String name;
-
     private String description;
-
     private Double price;
-
     private String brand;
-
     private List<MultipartFile> images;
-
     private String size;
-
-    private String productMaterial;
-
+    private String material;
+    private String color;
     private String occasion;
-
     private Double prevPrice;
-
-//    private Boolean productIsFavorite;
-//
-//    private Boolean productIsCart;
-
     private String productIsBadge;
-
-//    private boolean deleted;
-
     private String status;
-
     private LocalDateTime createdAt;
-
     private LocalDateTime updateAt;
-
     private LocalDateTime deletedAt;
-
     // Category
-    private int categoryId;
-//    private String categoryName;
-
+    private int categoryID;
     // CTV and Admin add
     private int ctvOrAdminId;
-//    private String ctvOrAdminName;
 
     public static Product toEntity(AddProductRequestDTO dto) {
         Product product = new Product();

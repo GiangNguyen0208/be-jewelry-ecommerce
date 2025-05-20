@@ -3,16 +3,11 @@ package com.example.Jewelry.controller;
 import com.example.Jewelry.dto.UserDTO;
 import com.example.Jewelry.dto.request.UserLoginRequest;
 import com.example.Jewelry.dto.response.CommonApiResponse;
-import com.example.Jewelry.dto.response.RegisterUserRequest;
 import com.example.Jewelry.dto.response.UserDTOResponse;
 import com.example.Jewelry.Utility.Constant;
 import com.example.Jewelry.dao.CtvDAO;
-import com.example.Jewelry.dao.UserDAO;
-import com.example.Jewelry.dto.UserDTO;
 import com.example.Jewelry.dto.request.ChangePasswordRequestDTO;
 import com.example.Jewelry.dto.request.RegisterCTVRequest;
-import com.example.Jewelry.dto.request.UserLoginRequest;
-import com.example.Jewelry.dto.response.CommonApiResponse;
 import com.example.Jewelry.dto.request.RegisterUserRequest;
 import com.example.Jewelry.dto.response.ImageUploadResponse;
 import com.example.Jewelry.dto.response.UserLoginResponse;
@@ -24,7 +19,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -74,9 +68,10 @@ public class UserController {
     }
 
     @GetMapping(value = "/users")
-    public  ResponseEntity<List<User>> getUsers() {
+    public  ResponseEntity<List<UserDTO>> getUsers() {
         List<User> users = userService.getAllUser();
-        return ResponseEntity.ok(users);
+        List<UserDTO> userDTOs = users.stream().map(UserDTO::toUserDtoEntity).toList();
+        return ResponseEntity.ok(userDTOs);
     }
 
     @GetMapping(value = "/info/{userID}")
