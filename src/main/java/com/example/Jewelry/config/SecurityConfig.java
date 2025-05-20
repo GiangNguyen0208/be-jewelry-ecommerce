@@ -2,6 +2,8 @@ package com.example.Jewelry.config;
 
 import com.example.Jewelry.Utility.Constant;
 import com.example.Jewelry.filter.JwtAuthFilter;
+import com.example.Jewelry.service.ServiceImpl.CustomOAuth2SuccessHandler;
+import com.example.Jewelry.service.ServiceImpl.CustomOAuth2UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,6 +31,12 @@ public class SecurityConfig {
 
     @Autowired
     private JwtAuthFilter authFilter;
+
+    @Autowired
+    private CustomOAuth2UserService customOAuth2UserService;
+
+    @Autowired
+    private CustomOAuth2SuccessHandler customOAuth2SuccessHandler;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -85,10 +93,14 @@ public class SecurityConfig {
         http.csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.disable())
 
-                .authorizeHttpRequests(auth -> auth.requestMatchers("/api/user/login", "/api/user/register", "/api/user/confirm", "/api/user/resend-confirmation").permitAll()
-
-                        // Add other authorization rules
+                .authorizeHttpRequests(auth -> auth.requestMatchers("/api/user/login", "/api/user/register", "/api/user/confirm", "/api/user/resend-confirmation","/login/oauth2/code/google").permitAll()
                         .anyRequest().permitAll())
+                .oauth2Login(oauth2 -> oauth2
+                        .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
+                        .successHandler(customOAuth2SuccessHandler)
+//                        .defaultSuccessUrl("http://localhost:3000/oauth2/redirect", true)
+                )
+
                         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
 //        http.addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class);
