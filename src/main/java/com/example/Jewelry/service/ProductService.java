@@ -1,12 +1,8 @@
 package com.example.Jewelry.service;
 
 import com.example.Jewelry.dto.ProductDTO;
-import com.example.Jewelry.dto.response.CategoryResponseDTO;
-import com.example.Jewelry.dto.response.CommonApiResponse;
 import com.example.Jewelry.entity.Category;
 import com.example.Jewelry.entity.Product;
-import com.example.Jewelry.entity.User;
-import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 
@@ -31,4 +27,8 @@ public interface ProductService {
     List<Product> fetchAllProductDeleteFalse();
 
     void deleteProduct(int productId);
+
+    List<ProductDTO> getActiveProductListForShop();
+
+    ProductDTO getProductDetailsForUser(int id);
 }
