@@ -2,18 +2,16 @@ package com.example.Jewelry.service.ServiceImpl;
 
 import com.example.Jewelry.dao.ProductDAO;
 import com.example.Jewelry.dto.ProductDTO;
-import com.example.Jewelry.dto.response.CategoryResponseDTO;
-import com.example.Jewelry.dto.response.CommonApiResponse;
+import com.example.Jewelry.dto.response.ImageDTO;
 import com.example.Jewelry.entity.Category;
 import com.example.Jewelry.entity.Product;
-import com.example.Jewelry.entity.User;
 import com.example.Jewelry.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class ProductServiceImpl implements ProductService {
@@ -88,6 +86,46 @@ public class ProductServiceImpl implements ProductService {
     public List<Product> updateAll(List<Product> courses) {
         // TODO Auto-generated method stub
         return productDAO.saveAll(courses);
+    }
+    @Override
+    public List<ProductDTO> getActiveProductListForShop() {
+        List<Product> products = productDAO.findByDeletedFalse();
+        return products.stream()
+                .filter(p -> "Active".equalsIgnoreCase(p.getStatus()))
+                .map(product -> ProductDTO.builder()
+                        .id(product.getId())
+                        .name(product.getName())
+                        .price(product.getPrice())
+                        .prevPrice(product.getPrevPrice())
+                        .imageURLs(product.getImages().stream()
+                                .map(img -> new ImageDTO(img.getId(), img.getUrl()))
+                                .collect(Collectors.toList()))
+                        .averageRating(2)  //rating tam thoi
+                        .totalRating(2)
+                        .categoryName(product.getCategory() != null ? product.getCategory().getName() : null)
+                        .build())
+                .toList();
+
+    }
+
+    @Override
+    public ProductDTO getProductDetailsForUser(int id) {
+        Product product = getById(id);
+        if (product == null || product.isDeleted() || !"Active".equalsIgnoreCase(product.getStatus())) {
+            return null;
+        }
+        return ProductDTO.builder()
+                .id(product.getId())
+                .name(product.getName())
+                .price(product.getPrice())
+                .prevPrice(product.getPrevPrice())
+                .imageURLs(product.getImages().stream()
+                        .map(img -> new ImageDTO(img.getId(), img.getUrl()))
+                        .collect(Collectors.toList()))
+                .averageRating(0) // sẽ thay sau nếu có
+                .totalRating(0)
+                .categoryName(product.getCategory() != null ? product.getCategory().getName() : null)
+                .build();
     }
 
 }
