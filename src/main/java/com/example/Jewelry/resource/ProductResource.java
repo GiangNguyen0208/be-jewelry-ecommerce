@@ -77,17 +77,17 @@ public class ProductResource {
             return new ResponseEntity<ProductResponseDTO>(response, HttpStatus.BAD_REQUEST);
         }
 
-        if (request.getCategoryID() == 0 || request.getDescription() == null
+        if (request.getCategoryId() == 0 || request.getDescription() == null
                 || request.getName() == null) {
                     
-            response.setResponseMessage("missing input " + Boolean.toString(request.getCategoryID() == 0) 
+            response.setResponseMessage("missing input " + Boolean.toString(request.getCategoryId() == 0) 
             + "::" + Boolean.toString(request.getDescription() == null)
              + "::" + Boolean.toString(request.getName() == null));
             response.setSuccess(false);
             return new ResponseEntity<ProductResponseDTO>(response, HttpStatus.BAD_REQUEST);
         }
 
-        Category category = this.categoryService.getCategoryById(request.getCategoryID());
+        Category category = this.categoryService.getCategoryById(request.getCategoryId());
 
         if (category == null) {
             response.setResponseMessage("category not found");

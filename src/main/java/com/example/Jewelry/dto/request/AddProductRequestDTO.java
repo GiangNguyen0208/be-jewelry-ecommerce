@@ -36,7 +36,7 @@ public class AddProductRequestDTO {
     private LocalDateTime updateAt;
     private LocalDateTime deletedAt;
     // Category
-    private int categoryID;
+    private int categoryId;
     // CTV and Admin add
     private int ctvOrAdminId;
 
