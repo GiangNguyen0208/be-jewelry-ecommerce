@@ -23,5 +23,7 @@ public class ProductResponseDTO extends CommonApiResponse {
 
     private List<ProductDTO> productDTOs;
 
+    private ProductDTO productDTO;
+
 
 }
