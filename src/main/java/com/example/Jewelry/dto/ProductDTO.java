@@ -1,6 +1,5 @@
 package com.example.Jewelry.dto;
 
-import com.example.Jewelry.dto.request.AddProductRequestDTO;
 import com.example.Jewelry.dto.response.ImageDTO;
 import com.example.Jewelry.entity.Product;
 import jakarta.persistence.PrePersist;
@@ -20,42 +19,26 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProductDTO {
+
     private int id;
-
     private String name;
-
     private String description;
-
     private Double price;
-
     private String brand;
-
     private List<MultipartFile> images;
-
     private String size;
-
     private String productMaterial;
-
     private String occasion;
-
     private Double prevPrice;
-
     private Boolean productIsFavorite;
-
     private Boolean productIsCart;
-
     private String productIsBadge;
-
     private boolean deleted;
-
     private String status;
 
     private LocalDateTime createdAt;
-
     private LocalDateTime updateAt;
-
     private LocalDateTime deletedAt;
-
     private List<ImageDTO> imageURLs;
 
     // Category
