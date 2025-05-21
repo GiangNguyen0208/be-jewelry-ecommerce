@@ -2,11 +2,8 @@ package com.example.Jewelry.controller;
 
 import com.example.Jewelry.dto.ProductDTO;
 import com.example.Jewelry.dto.request.AddProductRequestDTO;
-import com.example.Jewelry.dto.request.CategoryRequestDTO;
-import com.example.Jewelry.dto.response.CategoryResponseDTO;
 import com.example.Jewelry.dto.response.CommonApiResponse;
 import com.example.Jewelry.dto.response.ProductResponseDTO;
-import com.example.Jewelry.entity.Category;
 import com.example.Jewelry.entity.Product;
 import com.example.Jewelry.resource.ProductResource;
 import com.example.Jewelry.service.ProductService;
@@ -75,6 +72,18 @@ public class ProductController {
     public ResponseEntity<CommonApiResponse> updateProduct(@PathVariable("productId") int productId ,@ModelAttribute ProductDTO request) {
         return productResource.updateProduct(productId, request);
     }
-
+    @GetMapping("/list")
+    @Operation(summary = "API to show product list for user")
+    public ResponseEntity<List<ProductDTO>> showProductList() {
+        return ResponseEntity.ok(productService.getActiveProductListForShop());
+    }
+    @GetMapping("/{id}")
+    @Operation(summary = "API to get single product for list page")
+    public ResponseEntity<ProductDTO> getProductById(@PathVariable int id) {
+        ProductDTO product = productService.getProductDetailsForUser(id);
+        return product != null
+                ? ResponseEntity.ok(product)
+                : ResponseEntity.notFound().build();
+    }
 
 }
