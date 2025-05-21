@@ -55,4 +55,6 @@ public class CategoryServiceImpl implements CategoryService {
     public List<Category> getAllCategoriesDeletedTrue() {
         return this.categoryDAO.findByDeletedTrue();
     }
+
+
 }
