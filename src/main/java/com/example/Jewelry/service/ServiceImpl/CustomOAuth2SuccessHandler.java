@@ -4,19 +4,15 @@ import com.example.Jewelry.Utility.Constant;
 import com.example.Jewelry.Utility.JwtUtils;
 import com.example.Jewelry.dao.UserDAO;
 import com.example.Jewelry.dto.UserDTO;
-import com.example.Jewelry.dto.response.UserLoginResponse;
 import com.example.Jewelry.entity.User;
-import com.example.Jewelry.filter.JwtAuthFilter;
-import com.example.Jewelry.resource.UserResource;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
@@ -29,7 +25,6 @@ import java.util.Map;
 
 @Component
 public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler {
-    private final Logger LOG = LoggerFactory.getLogger(UserResource.class);
 
     @Autowired
     private JwtUtils jwtUtils;
@@ -40,32 +35,71 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
     @Autowired
     private ObjectMapper objectMapper;
 
+    private static final Logger LOG = LoggerFactory.getLogger(CustomOAuth2SuccessHandler.class);
+
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
+        OAuth2AuthenticationToken oauthToken = (OAuth2AuthenticationToken) authentication;
+        String provider = oauthToken.getAuthorizedClientRegistrationId(); // "google" hoặc "facebook"
         OAuth2User oauthUser = (OAuth2User) authentication.getPrincipal();
         Map<String, Object> attributes = oauthUser.getAttributes();
 
-        String email = (String) attributes.get("email");
-        String oauth2Id = (String) attributes.get("sub"); // Google ID
-        String provider = "google"; // Hardcoded nếu bạn dùng mỗi Google
+        String email = null;
+        String firstName = null;
+        String lastName = null;
+        String avatarUrl = null;
+        String oauth2Id = null;
+        boolean isVerified = false;
 
-        LOG.info("OAuth2 login - email: {}", email);
+        // Xử lý theo provider
+        if ("google".equals(provider)) {
+            email = (String) attributes.get("email");
+            firstName = (String) attributes.get("given_name");
+            lastName = (String) attributes.get("family_name");
+            avatarUrl = (String) attributes.get("picture");
+            oauth2Id = (String) attributes.get("sub");
 
+            Object verifiedObj = attributes.get("email_verified");
+            isVerified = verifiedObj instanceof Boolean && (Boolean) verifiedObj;
+
+        } else if ("facebook".equals(provider)) {
+            email = (String) attributes.get("email");
+            firstName = (String) attributes.get("first_name");
+            lastName = (String) attributes.get("last_name");
+            oauth2Id = (String) attributes.get("id");
+
+            try {
+                Map<String, Object> picture = (Map<String, Object>) attributes.get("picture");
+                if (picture != null) {
+                    Map<String, Object> data = (Map<String, Object>) picture.get("data");
+                    if (data != null) {
+                        avatarUrl = (String) data.get("url");
+                    }
+                }
+            } catch (Exception e) {
+                LOG.warn("Cannot extract Facebook avatar", e);
+            }
+
+            isVerified = true; // Facebook mặc định email là verified nếu cung cấp được
+        }
+
+        if (email == null || oauth2Id == null) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Email or OAuth2 ID missing.");
+            return;
+        }
+
+        // Kiểm tra user
         User user = userDAO.findByEmailId(email);
         if (user == null) {
             user = new User();
             user.setEmailId(email);
-            user.setFirstName((String) attributes.get("given_name"));
-            user.setLastName((String) attributes.get("family_name"));
-            user.setAvatar((String) attributes.get("picture"));
+            user.setFirstName(firstName);
+            user.setLastName(lastName);
+            user.setAvatar(avatarUrl);
             user.setRole(Constant.UserRole.ROLE_USER.value());
             user.setStatus(Constant.ActiveStatus.ACTIVE.value());
             user.setOauth2_provider(provider);
             user.setOauth2_id(oauth2Id);
-
-            // Kiểm tra email_verified
-            Object verifiedObj = attributes.get("email_verified");
-            boolean isVerified = (verifiedObj instanceof Boolean) ? (Boolean) verifiedObj : false;
             user.setEmail_verified(isVerified);
 
             user = userDAO.save(user);
@@ -88,6 +122,4 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
         response.setStatus(HttpServletResponse.SC_FOUND);
         response.setHeader("Location", redirectURL);
     }
-
-
 }
