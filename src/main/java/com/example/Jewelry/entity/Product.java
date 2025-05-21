@@ -1,6 +1,5 @@
 package com.example.Jewelry.entity;
 
-
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -14,37 +13,49 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Product {
+
+    /** Product ID */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
+    /** Product Name */
     private String name;
 
-    @Column(name = "description", columnDefinition = "LONGTEXT")
+    /** Product Description */
+    @Column(columnDefinition = "LONGTEXT")
     private String description;
 
-    @Column(name = "price", nullable = false)
+    /** Product Pricing */
+    @Column(nullable = false)
     private Double price;
 
+    /** Product Category it belongs too */
     @ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
     @JoinColumn(name = "category_id")
-    private Category category;;
+    private Category category;
 
-    @Column(name = "brand")
+    /** Product Brands? */
+    @Column
     private String brand;
 
+    /** Product Images to show */
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Image> images;
 
-    @Column(name = "size")
+    /** Product Sizing  */
+    @Column
     private String size;
 
+    /** Product material */
     @Column(name = "material")
     private String productMaterial;
 
-    @Column(name = "occasion")
+    /** Product for which occasion */
+    @Column
     private String occasion;
 
+    /** Product original price */
     @Column(name = "prev_price")
     private Double prevPrice;
 
@@ -54,9 +65,11 @@ public class Product {
     @Column(name = "product_is_cart")
     private Boolean productIsCart;
 
+    /** Tag */
     @Column(name = "product_is_badge")
     private String productIsBadge;
 
+    /** Đã xóa */
     private boolean deleted;
 
     private String status;

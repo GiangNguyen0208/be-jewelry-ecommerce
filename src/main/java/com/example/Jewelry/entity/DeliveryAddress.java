@@ -1,0 +1,48 @@
+package com.example.Jewelry.entity;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@Entity
+@NoArgsConstructor
+public class DeliveryAddress {
+
+    /** Mã định danh */
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
+
+    /** Chủ nhân của địa chỉ giao hàng, dùng để biết địa chỉ thuộc về sổ địa chỉ của người dùng nào */
+    @ManyToOne
+    @JoinColumn(nullable = false)
+    private User owner;
+
+    /** Tên người nhận (không nhất thiết là chính người dùng đó) */
+    private String receiverName;
+
+    /** Số nhà */
+    private String buildingAddress;
+
+    /** Phường / Xã */
+    private String wardName;
+
+    /** Quận / Huyện */
+    private String districtName;
+
+    /** Tỉnh / Thành Phố */
+    private String provinceName;
+
+    /** Điện thoại liên lạc */
+    private String contactNumber;
+
+    /** Địa chỉ giao hàng này có là cá nhân hay nơi làm */
+    private boolean isWorkAddress;
+
+}

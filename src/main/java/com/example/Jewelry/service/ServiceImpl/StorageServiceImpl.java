@@ -35,7 +35,6 @@ public class StorageServiceImpl implements StorageService {
 
     @Override
     public String store(MultipartFile file) {
-
         String ext = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
 
         String fileName = UUID.randomUUID().toString().replaceAll("-", "") + ext;
@@ -72,7 +71,6 @@ public class StorageServiceImpl implements StorageService {
 
     @Override
     public String storeProductImage(MultipartFile file) {
-
         String ext = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
 
         String fileName = UUID.randomUUID().toString().replaceAll("-", "") + ext;
