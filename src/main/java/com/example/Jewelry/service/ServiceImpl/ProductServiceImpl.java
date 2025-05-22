@@ -6,6 +6,7 @@ import com.example.Jewelry.dto.response.ImageDTO;
 import com.example.Jewelry.entity.Category;
 import com.example.Jewelry.entity.Product;
 import com.example.Jewelry.service.ProductService;
+import com.example.Jewelry.service.ReviewService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +18,9 @@ import java.util.stream.Collectors;
 public class ProductServiceImpl implements ProductService {
     @Autowired
     private ProductDAO productDAO;
+
+    @Autowired
+    private ReviewService reviewService;
 
     @Override
     public Product add(Product product) {
@@ -100,8 +104,8 @@ public class ProductServiceImpl implements ProductService {
                         .imageURLs(product.getImages().stream()
                                 .map(img -> new ImageDTO(img.getId(), img.getUrl()))
                                 .collect(Collectors.toList()))
-                        .averageRating(2)  //rating tam thoi
-                        .totalRating(2)
+                        .averageRating(reviewService.getAverageRatingForProduct(product.getId()))
+                        .totalRating(reviewService.getTotalReviewsForProduct(product.getId()))
                         .categoryName(product.getCategory() != null ? product.getCategory().getName() : null)
                         .build())
                 .toList();
