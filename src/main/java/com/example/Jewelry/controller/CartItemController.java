@@ -34,13 +34,24 @@ public class CartItemController {
     @Operation(summary = "Xóa SP trong Cart")
     public ResponseEntity<CommonApiResponse> removeFromCart(
             @RequestParam int userId,
-            @RequestParam int productId) {
-        return ResponseEntity.ok(cartService.removeFromCart(userId, productId));
+            @RequestParam int cartItemId) {
+        return ResponseEntity.ok(cartService.removeFromCart(userId, cartItemId));
     }
 
     @DeleteMapping("/clear")
     @Operation(summary = "Xóa hết trong giỏ hàng")
     public ResponseEntity<CommonApiResponse> clearCart(@RequestParam int userId) {
         return ResponseEntity.ok(cartService.clearCart(userId));
+    }
+
+    @PutMapping("/update-quantity")
+    @Operation(summary = "Cập nhật số lượng sản phẩm trong giỏ hàng")
+    public ResponseEntity<CommonApiResponse> updateCartQuantity(
+            @RequestParam int userId,
+            @RequestParam int cartItemId,
+            @RequestParam String action
+    ) {
+        CommonApiResponse response = cartService.updateQuantity(userId, cartItemId, action);
+        return ResponseEntity.ok(response);
     }
 }

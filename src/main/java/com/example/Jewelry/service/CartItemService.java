@@ -9,6 +9,7 @@ public interface CartItemService {
     CartItem addToCart(int userId, int productId, int quantity);
     List<CartItem> getCartItems(int userId);
     CommonApiResponse clearCart(int userId);
-    CommonApiResponse removeFromCart(int userId, int productId);
+    CommonApiResponse removeFromCart(int userId, int cartItemId);
+    CommonApiResponse updateQuantity(int userId, int cartItemId, String action);
 }
 

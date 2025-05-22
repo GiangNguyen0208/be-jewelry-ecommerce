@@ -41,16 +41,23 @@ public class CartItemServiceImpl implements CartItemService {
         Optional<CartItem> existing = cartItemDAO.findByUserAndProduct(user, product);
         if (existing.isPresent()) {
             CartItem item = existing.get();
-            item.setQuantity(item.getQuantity() + quantity);
+            if (item.isDeleted()) {
+                item.setDeleted(false);
+                item.setQuantity(quantity);
+            } else {
+                item.setQuantity(item.getQuantity() + quantity);
+            }
             return cartItemDAO.save(item);
+        } else {
+            CartItem newItem = new CartItem();
+            newItem.setUser(user);
+            newItem.setProduct(product);
+            newItem.setQuantity(quantity);
+            newItem.setDeleted(false);
+            return cartItemDAO.save(newItem);
         }
-
-        CartItem newItem = new CartItem();
-        newItem.setUser(user);
-        newItem.setProduct(product);
-        newItem.setQuantity(quantity);
-        return cartItemDAO.save(newItem);
     }
+
 
     @Override
     public List<CartItem> getCartItems(int userId) {
@@ -59,28 +66,33 @@ public class CartItemServiceImpl implements CartItemService {
     }
 
     @Override
-    public CommonApiResponse removeFromCart(int userId, int productId) {
+    public CommonApiResponse removeFromCart(int userId, int cartItemId) {
         CommonApiResponse response = new CommonApiResponse();
         Optional<User> userOpt = userDAO.findById(userId);
-        Optional<Product> productOpt = productDAO.findById(productId);
+        Optional<CartItem> cartItemOpt = cartItemDAO.findById(cartItemId);
 
-        if (userOpt.isPresent() && productOpt.isPresent()) {
-            Optional<CartItem> cartOpt = cartItemDAO.findByUserAndProductAndDeletedFalse(userOpt.get(), productOpt.get());
+        if (userOpt.isPresent() && cartItemOpt.isPresent()) {
+            CartItem cartItem = cartItemOpt.get();
 
-            if (cartOpt.isPresent()) {
-                CartItem cart = cartOpt.get();
-                cart.setDeleted(true);
-                cartItemDAO.save(cart);
-                response.setSuccess(true);
-                response.setResponseMessage("Đã xóa khỏi giỏ hàng");
-            } else {
+            if (cartItem.getUser().getId() != userId) {
                 response.setSuccess(false);
-                response.setResponseMessage("Không tìm thấy sản phẩm trong giỏ hàng");
+                response.setResponseMessage("Sản phẩm không thuộc người dùng");
+                return response;
             }
+
+            cartItem.setDeleted(true);
+            cartItemDAO.save(cartItem);
+
+            response.setSuccess(true);
+            response.setResponseMessage("Đã xóa khỏi giỏ hàng");
+        } else {
+            response.setSuccess(false);
+            response.setResponseMessage("Không tìm thấy người dùng hoặc sản phẩm trong giỏ hàng");
         }
 
         return response;
     }
+
 
     @Override
     public CommonApiResponse clearCart(int userId) {
@@ -95,4 +107,38 @@ public class CartItemServiceImpl implements CartItemService {
         response.setResponseMessage("Đã xóa toàn bộ giỏ hàng");
         return response;
     }
+
+    @Override
+    public CommonApiResponse updateQuantity(int userId, int cartItemId, String action) {
+        CommonApiResponse response = new CommonApiResponse();
+        Optional<CartItem> cartItemOpt = cartItemDAO.findById(cartItemId);
+
+        if (cartItemOpt.isPresent()) {
+            CartItem cartItem = cartItemOpt.get();
+
+            if (cartItem.getUser().getId() != userId) {
+                response.setSuccess(false);
+                response.setResponseMessage("Sản phẩm không thuộc người dùng");
+                return response;
+            }
+
+            int currentQty = cartItem.getQuantity();
+            if (action.equalsIgnoreCase("increment")) {
+                cartItem.setQuantity(currentQty + 1);
+            } else if (action.equalsIgnoreCase("decrement") && currentQty > 1) {
+                cartItem.setQuantity(currentQty - 1);
+            }
+
+            cartItemDAO.save(cartItem);
+            response.setSuccess(true);
+            response.setResponseMessage("Đã cập nhật số lượng");
+
+        } else {
+            response.setSuccess(false);
+            response.setResponseMessage("Không tìm thấy sản phẩm trong giỏ hàng");
+        }
+
+        return response;
+    }
+
 }

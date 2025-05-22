@@ -10,14 +10,9 @@ import java.util.Optional;
 
 public interface CartItemDAO extends JpaRepository<CartItem, Integer> {
 
-    List<CartItem> findByUser(User user);
-
     Optional<CartItem> findByUserAndProduct(User user, Product product);
-
-    void deleteByUser(User user);
 
     List<CartItem> findByUserAndDeletedFalse(User user);
 
-    Optional<CartItem> findByUserAndProductAndDeletedFalse(User user, Product product);
 }
 
