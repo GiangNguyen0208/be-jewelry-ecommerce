@@ -28,20 +28,16 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLConnection;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Component
 @Transactional
@@ -78,27 +74,24 @@ public class ProductResource {
         if (request == null) {
             response.setResponseMessage("missing request body");
             response.setSuccess(false);
-
             return new ResponseEntity<ProductResponseDTO>(response, HttpStatus.BAD_REQUEST);
         }
 
         if (request.getCategoryId() == 0 || request.getDescription() == null
                 || request.getName() == null) {
-            response.setResponseMessage("missing input");
+                    
+            response.setResponseMessage("missing input " + Boolean.toString(request.getCategoryId() == 0) 
+            + "::" + Boolean.toString(request.getDescription() == null)
+             + "::" + Boolean.toString(request.getName() == null));
             response.setSuccess(false);
-
             return new ResponseEntity<ProductResponseDTO>(response, HttpStatus.BAD_REQUEST);
         }
-
-        String addedDateTime = String
-                .valueOf(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
 
         Category category = this.categoryService.getCategoryById(request.getCategoryId());
 
         if (category == null) {
             response.setResponseMessage("category not found");
             response.setSuccess(false);
-
             return new ResponseEntity<ProductResponseDTO>(response, HttpStatus.BAD_REQUEST);
         }
 
@@ -107,7 +100,6 @@ public class ProductResource {
         if (ctvOrAdmin == null) {
             response.setResponseMessage("admin not found");
             response.setSuccess(false);
-
             return new ResponseEntity<ProductResponseDTO>(response, HttpStatus.BAD_REQUEST);
         }
 

@@ -1,13 +1,13 @@
 package com.example.Jewelry.controller;
 
-import com.example.Jewelry.Utility.Constant;
-import com.example.Jewelry.dao.CtvDAO;
-import com.example.Jewelry.dao.UserDAO;
 import com.example.Jewelry.dto.UserDTO;
-import com.example.Jewelry.dto.request.ChangePasswordRequestDTO;
-import com.example.Jewelry.dto.request.RegisterCTVRequest;
 import com.example.Jewelry.dto.request.UserLoginRequest;
 import com.example.Jewelry.dto.response.CommonApiResponse;
+import com.example.Jewelry.dto.response.UserDTOResponse;
+import com.example.Jewelry.Utility.Constant;
+import com.example.Jewelry.dao.CtvDAO;
+import com.example.Jewelry.dto.request.ChangePasswordRequestDTO;
+import com.example.Jewelry.dto.request.RegisterCTVRequest;
 import com.example.Jewelry.dto.request.RegisterUserRequest;
 import com.example.Jewelry.dto.response.ImageUploadResponse;
 import com.example.Jewelry.dto.response.UserLoginResponse;
@@ -68,11 +68,28 @@ public class UserController {
     }
 
     @GetMapping(value = "/users")
-    public  ResponseEntity<List<User>> getUsers() {
+    public  ResponseEntity<List<UserDTO>> getUsers() {
         List<User> users = userService.getAllUser();
-        return ResponseEntity.ok(users);
+        List<UserDTO> userDTOs = users.stream().map(UserDTO::toUserDtoEntity).toList();
+        return ResponseEntity.ok(userDTOs);
     }
 
+    @GetMapping(value = "/info/{userID}")
+    public ResponseEntity<UserDTOResponse> getUserByID(@PathVariable int userID) {
+        UserDTOResponse response = new UserDTOResponse();
+        User user = userService.getUserById(userID);
+        if (user == null) {
+            response.setSuccess(false);
+            response.setResponseMessage("Error: No user founded with this id!");
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        }
+        UserDTO userDTO = UserDTO.toUserDtoEntity(user);
+        response.setSuccess(true);
+        response.setResponseMessage("Get user detail successfully!");
+        response.setData(userDTO);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+    
     @PutMapping("/update/{userId}")
     public ResponseEntity<CommonApiResponse> updateUserProfile(@PathVariable("userId") int userId, @RequestBody UserDTO request) {
         return userResource.updateUserProfile(userId, request);

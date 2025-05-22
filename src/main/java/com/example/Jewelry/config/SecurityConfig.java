@@ -1,6 +1,5 @@
 package com.example.Jewelry.config;
 
-import com.example.Jewelry.Utility.Constant;
 import com.example.Jewelry.filter.JwtAuthFilter;
 import com.example.Jewelry.service.ServiceImpl.CustomOAuth2FailureHandler;
 import com.example.Jewelry.service.ServiceImpl.CustomOAuth2SuccessHandler;
