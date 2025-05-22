@@ -2,6 +2,7 @@ package com.example.Jewelry.config;
 
 import com.example.Jewelry.Utility.Constant;
 import com.example.Jewelry.filter.JwtAuthFilter;
+import com.example.Jewelry.service.ServiceImpl.CustomOAuth2FailureHandler;
 import com.example.Jewelry.service.ServiceImpl.CustomOAuth2SuccessHandler;
 import com.example.Jewelry.service.ServiceImpl.CustomOAuth2UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +38,9 @@ public class SecurityConfig {
 
     @Autowired
     private CustomOAuth2SuccessHandler customOAuth2SuccessHandler;
+
+    @Autowired
+    private CustomOAuth2FailureHandler customOAuth2FailureHandler;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -87,24 +91,30 @@ public class SecurityConfig {
 //
 //    }
 
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-
-        http.csrf(csrf -> csrf.disable())
+        http
+                .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.disable())
-
-                .authorizeHttpRequests(auth -> auth.requestMatchers("/api/user/login", "/api/user/register", "/api/user/confirm", "/api/user/resend-confirmation","/login/oauth2/code/google").permitAll()
-                        .anyRequest().permitAll())
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(
+                                "/api/user/login",
+                                "/api/user/register",
+                                "/api/user/confirm",
+                                "/api/user/resend-confirmation",
+                                "/oauth2/**"
+                        ).permitAll()
+                        .anyRequest().authenticated()
+                )
                 .oauth2Login(oauth2 -> oauth2
                         .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
                         .successHandler(customOAuth2SuccessHandler)
-//                        .defaultSuccessUrl("http://localhost:3000/oauth2/redirect", true)
+                        .failureHandler(customOAuth2FailureHandler)
                 )
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
-                        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-
-//        http.addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class);
-
+        http.addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 

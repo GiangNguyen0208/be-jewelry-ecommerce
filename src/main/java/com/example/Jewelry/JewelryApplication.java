@@ -13,6 +13,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.time.LocalDateTime;
+
 @SpringBootApplication
 @EnableWebSecurity
 public class JewelryApplication implements CommandLineRunner {
@@ -50,6 +52,8 @@ public class JewelryApplication implements CommandLineRunner {
 			user.setEmailId("demo.admin@demo.com");
 			user.setPassword(passwordEncoder.encode("admin123"));
 			user.setRole(Constant.UserRole.ROLE_ADMIN.value());
+			user.setCreatedAt(LocalDateTime.now());
+			user.setUpdateAt(LocalDateTime.now());
 			user.setStatus(Constant.ActiveStatus.ACTIVE.value());
 
 			this.userService.addUser(user);

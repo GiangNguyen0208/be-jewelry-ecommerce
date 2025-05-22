@@ -20,6 +20,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.Map;
 
@@ -37,89 +38,147 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
 
     private static final Logger LOG = LoggerFactory.getLogger(CustomOAuth2SuccessHandler.class);
 
+    private static final String DEFAULT_TARGET_URL = "http://localhost:3000/";
+
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
-        OAuth2AuthenticationToken oauthToken = (OAuth2AuthenticationToken) authentication;
-        String provider = oauthToken.getAuthorizedClientRegistrationId(); // "google" hoặc "facebook"
-        OAuth2User oauthUser = (OAuth2User) authentication.getPrincipal();
-        Map<String, Object> attributes = oauthUser.getAttributes();
+        String redirectURL = DEFAULT_TARGET_URL;
+        try {
+            OAuth2AuthenticationToken oauthToken = (OAuth2AuthenticationToken) authentication;
+            String provider = oauthToken.getAuthorizedClientRegistrationId(); // "google" hoặc "facebook"
+            OAuth2User oauthUser = (OAuth2User) authentication.getPrincipal();
+            Map<String, Object> attributes = oauthUser.getAttributes();
 
-        String email = null;
-        String firstName = null;
-        String lastName = null;
-        String avatarUrl = null;
-        String oauth2Id = null;
-        boolean isVerified = false;
+            String email = null;
+            String firstName = null;
+            String lastName = null;
+            String avatarUrl = null;
+            String oauth2Id = null;
+            String username = null;
+            boolean isVerified = false;
 
-        // Xử lý theo provider
-        if ("google".equals(provider)) {
-            email = (String) attributes.get("email");
-            firstName = (String) attributes.get("given_name");
-            lastName = (String) attributes.get("family_name");
-            avatarUrl = (String) attributes.get("picture");
-            oauth2Id = (String) attributes.get("sub");
+            if ("google".equalsIgnoreCase(provider)) {
+                email = (String) attributes.get("email");
+                firstName = (String) attributes.get("given_name");
+                lastName = (String) attributes.get("family_name");
+                avatarUrl = (String) attributes.get("picture");
+                oauth2Id = (String) attributes.get("sub");
+                username = firstName + lastName;
 
-            Object verifiedObj = attributes.get("email_verified");
-            isVerified = verifiedObj instanceof Boolean && (Boolean) verifiedObj;
+                Object verifiedObj = attributes.get("email_verified");
+                isVerified = verifiedObj instanceof Boolean && (Boolean) verifiedObj;
 
-        } else if ("facebook".equals(provider)) {
-            email = (String) attributes.get("email");
-            firstName = (String) attributes.get("first_name");
-            lastName = (String) attributes.get("last_name");
-            oauth2Id = (String) attributes.get("id");
+            } else if ("facebook".equalsIgnoreCase(provider)) {
+                oauth2Id = (String) attributes.get("id");
+                firstName = (String) attributes.get("first_name");
+                lastName = (String) attributes.get("last_name");
+                email = (String) attributes.get("email"); // Có thể null
+                username = firstName + lastName;
 
-            try {
-                Map<String, Object> picture = (Map<String, Object>) attributes.get("picture");
-                if (picture != null) {
-                    Map<String, Object> data = (Map<String, Object>) picture.get("data");
-                    if (data != null) {
-                        avatarUrl = (String) data.get("url");
+                try {
+                    Map<String, Object> picture = (Map<String, Object>) attributes.get("picture");
+                    if (picture != null) {
+                        Map<String, Object> data = (Map<String, Object>) picture.get("data");
+                        if (data != null) {
+                            avatarUrl = (String) data.get("url");
+                        }
                     }
+                } catch (Exception e) {
+                    LOG.warn("Cannot extract Facebook avatar", e);
                 }
-            } catch (Exception e) {
-                LOG.warn("Cannot extract Facebook avatar", e);
+
+                // Facebook: email optional, coi như verified nếu tồn tại
+                isVerified = (email != null);
+            } else {
+                LOG.warn("Unknown OAuth2 provider: {}", provider);
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Unsupported OAuth2 provider");
+                return;
             }
 
-            isVerified = true; // Facebook mặc định email là verified nếu cung cấp được
+            if (oauth2Id == null) {
+                LOG.error("OAuth2 ID is missing from provider: {}", provider);
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "OAuth2 ID missing.");
+                return;
+            }
+
+            User user = null;
+            if (email != null) {
+                user = userDAO.findByEmailId(email);
+            }
+
+            // Nếu không có email hoặc không tìm thấy theo email => tìm theo oauth2Id
+            if (user == null) {
+                user = userDAO.findByOauth2Id(oauth2Id);
+            }
+
+            if (user == null) {
+                user = new User();
+                user.setEmailId(email); // Có thể null
+                user.setFirstName(firstName);
+                user.setLastName(lastName);
+                user.setAvatar(avatarUrl);
+                user.setRole(Constant.UserRole.ROLE_USER.value());
+                user.setStatus(Constant.ActiveStatus.ACTIVE.value());
+                user.setOauth2_provider(provider);
+                user.setOauth2_id(oauth2Id);
+                user.setEmail_verified(isVerified);
+                user.setCreatedAt(LocalDateTime.now());
+                user.setUpdateAt(LocalDateTime.now());
+                user.setUsername(username);
+
+                user = userDAO.save(user);
+                LOG.info("Created new user via OAuth2: email={}, provider={}", email, provider);
+            } else {
+                boolean updated = false;
+
+                if (!provider.equalsIgnoreCase(user.getOauth2_provider())) {
+                    user.setOauth2_provider(provider);
+                    updated = true;
+                }
+                if (!oauth2Id.equals(user.getOauth2_id())) {
+                    user.setOauth2_id(oauth2Id);
+                    updated = true;
+                }
+                if (isVerified != user.isEmail_verified()) {
+                    user.setEmail_verified(isVerified);
+                    updated = true;
+                }
+                if (avatarUrl != null && !avatarUrl.equals(user.getAvatar())) {
+                    user.setAvatar(avatarUrl);
+                    updated = true;
+                }
+                if (firstName != null && !firstName.equals(user.getFirstName())) {
+                    user.setFirstName(firstName);
+                    updated = true;
+                }
+                if (lastName != null && !lastName.equals(user.getLastName())) {
+                    user.setLastName(lastName);
+                    updated = true;
+                }
+
+                if (updated) {
+                    user = userDAO.save(user);
+                    LOG.info("Updated existing user info via OAuth2: id={}, provider={}", oauth2Id, provider);
+                }
+            }
+
+            String jwt = jwtUtils.generateToken(user.getUsername());
+
+            UserDTO userDTO = UserDTO.toUserDtoEntity(user);
+            String userJson = objectMapper.writeValueAsString(userDTO);
+            String userBase64 = Base64.getEncoder().encodeToString(userJson.getBytes(StandardCharsets.UTF_8));
+
+            redirectURL = UriComponentsBuilder.fromUriString("http://localhost:3000/oauth2/redirect")
+                    .queryParam("token", jwt)
+                    .queryParam("user", userBase64)
+                    .queryParam("ts", System.currentTimeMillis())
+                    .build()
+                    .toUriString();
+            LOG.info("OAuth2 login successful: {}", authentication.getName());
+        } catch (Exception e) {
+            LOG.error("Error during OAuth2 login success handling", e);
         }
-
-        if (email == null || oauth2Id == null) {
-            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Email or OAuth2 ID missing.");
-            return;
-        }
-
-        // Kiểm tra user
-        User user = userDAO.findByEmailId(email);
-        if (user == null) {
-            user = new User();
-            user.setEmailId(email);
-            user.setFirstName(firstName);
-            user.setLastName(lastName);
-            user.setAvatar(avatarUrl);
-            user.setRole(Constant.UserRole.ROLE_USER.value());
-            user.setStatus(Constant.ActiveStatus.ACTIVE.value());
-            user.setOauth2_provider(provider);
-            user.setOauth2_id(oauth2Id);
-            user.setEmail_verified(isVerified);
-
-            user = userDAO.save(user);
-        }
-
-        // Tạo JWT
-        String jwt = jwtUtils.generateToken(user.getUsername());
-
-        // Encode user info để gửi về frontend
-        UserDTO userDTO = UserDTO.toUserDtoEntity(user);
-        String userJson = objectMapper.writeValueAsString(userDTO);
-        String userBase64 = Base64.getEncoder().encodeToString(userJson.getBytes(StandardCharsets.UTF_8));
-
-        // Build redirect URL
-        String redirectURL = UriComponentsBuilder.fromUriString("http://localhost:3000/oauth2/redirect")
-                .queryParam("token", jwt)
-                .queryParam("user", userBase64)
-                .build().toUriString();
-
-        response.setStatus(HttpServletResponse.SC_FOUND);
-        response.setHeader("Location", redirectURL);
+        response.sendRedirect(redirectURL);
     }
+
 }
