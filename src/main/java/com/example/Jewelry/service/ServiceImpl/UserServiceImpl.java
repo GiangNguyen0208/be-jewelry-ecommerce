@@ -184,4 +184,5 @@ public class UserServiceImpl implements UserService {
 
         return Optional.of(confirmationToken.getUser());
     }
+
 }
