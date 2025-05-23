@@ -50,6 +50,8 @@ public class User {
 
     private String role;
 
+    private boolean email_verified;
+
     private String avatar;
 
     private BigDecimal amount;

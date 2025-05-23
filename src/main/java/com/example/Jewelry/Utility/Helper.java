@@ -6,7 +6,7 @@ import java.util.Random;
 public class Helper {
 
     private static final Random RANDOM = new SecureRandom();
-    private static final int OTP_LENGTH = 6;
+    //private static final int OTP_LENGTH = 6;
 
     public static String generateTourBookingId() {
 

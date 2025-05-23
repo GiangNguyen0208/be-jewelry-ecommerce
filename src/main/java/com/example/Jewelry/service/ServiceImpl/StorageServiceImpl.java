@@ -35,11 +35,12 @@ public class StorageServiceImpl implements StorageService {
 
     @Override
     public String store(MultipartFile file) {
-
         String ext = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
 
         String fileName = UUID.randomUUID().toString().replaceAll("-", "") + ext;
         File filePath = new File(PROFILE_PIC_BASEPATH, fileName);
+        // Fix for non-existing parent directory
+        filePath.getParentFile().mkdirs();
         try (FileOutputStream out = new FileOutputStream(filePath)) {
             FileCopyUtils.copy(file.getInputStream(), out);
             return fileName;
@@ -72,11 +73,12 @@ public class StorageServiceImpl implements StorageService {
 
     @Override
     public String storeProductImage(MultipartFile file) {
-
         String ext = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
 
         String fileName = UUID.randomUUID().toString().replaceAll("-", "") + ext;
         File filePath = new File(PRODUCT_BASEPATH, fileName);
+        // Fix for non-existing parent directory
+        filePath.getParentFile().mkdirs();
         try (FileOutputStream out = new FileOutputStream(filePath)) {
             FileCopyUtils.copy(file.getInputStream(), out);
             return fileName;
@@ -114,6 +116,8 @@ public class StorageServiceImpl implements StorageService {
 
         String fileName = UUID.randomUUID().toString().replaceAll("-", "") + ext;
         File filePath = new File(CATEGORY_BASEPATH, fileName);
+        // Fix for non-existing parent directory
+        filePath.getParentFile().mkdirs();
         try (FileOutputStream out = new FileOutputStream(filePath)) {
             FileCopyUtils.copy(file.getInputStream(), out);
             return fileName;

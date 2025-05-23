@@ -1,14 +1,15 @@
 package com.example.Jewelry.config;
 
-import com.example.Jewelry.Utility.Constant;
 import com.example.Jewelry.filter.JwtAuthFilter;
+import com.example.Jewelry.service.ServiceImpl.CustomOAuth2FailureHandler;
+import com.example.Jewelry.service.ServiceImpl.CustomOAuth2SuccessHandler;
+import com.example.Jewelry.service.ServiceImpl.CustomOAuth2UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -29,6 +30,15 @@ public class SecurityConfig {
 
     @Autowired
     private JwtAuthFilter authFilter;
+
+    @Autowired
+    private CustomOAuth2UserService customOAuth2UserService;
+
+    @Autowired
+    private CustomOAuth2SuccessHandler customOAuth2SuccessHandler;
+
+    @Autowired
+    private CustomOAuth2FailureHandler customOAuth2FailureHandler;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -79,20 +89,30 @@ public class SecurityConfig {
 //
 //    }
 
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-
-        http.csrf(csrf -> csrf.disable())
+        http
+                .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.disable())
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(
+                                "/api/user/login",
+                                "/api/user/register",
+                                "/api/user/confirm",
+                                "/api/user/resend-confirmation",
+                                "/oauth2/**"
+                        ).permitAll()
+                        .anyRequest().authenticated()
+                )
+                .oauth2Login(oauth2 -> oauth2
+                        .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
+                        .successHandler(customOAuth2SuccessHandler)
+                        .failureHandler(customOAuth2FailureHandler)
+                )
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
-                .authorizeHttpRequests(auth -> auth.requestMatchers("/api/user/login", "/api/user/register", "/api/user/confirm", "/api/user/resend-confirmation").permitAll()
-
-                        // Add other authorization rules
-                        .anyRequest().permitAll())
-                        .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-
-//        http.addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class);
-
+        http.addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 

@@ -6,8 +6,8 @@ import lombok.Data;
 @Data
 public class UserLoginResponse extends CommonApiResponse {
 
-    private UserDTO user;
-
+    private int userID;
+    private String username;
     private String jwtToken;
 
 }

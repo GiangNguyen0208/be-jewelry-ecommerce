@@ -115,7 +115,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductDTO getProductDetailsForUser(int id) {
         Product product = getById(id);
-        if (product == null || product.isDeleted() || !"Active".equalsIgnoreCase(product.getStatus())) {
+        if (product == null || product.isDeleted() || !"active".equalsIgnoreCase(product.getStatus())) {
             return null;
         }
         return ProductDTO.builder()
