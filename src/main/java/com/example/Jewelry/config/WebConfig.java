@@ -38,12 +38,14 @@ public class WebConfig {
         config.setAllowedHeaders(Arrays.asList(
                 HttpHeaders.AUTHORIZATION,
                 HttpHeaders.CONTENT_TYPE,
-                HttpHeaders.ACCEPT));
+                HttpHeaders.ACCEPT,
+                "userid"));
         config.setAllowedMethods(Arrays.asList(
                 HttpMethod.GET.name(),
                 HttpMethod.POST.name(),
                 HttpMethod.PUT.name(),
-                HttpMethod.DELETE.name()));
+                HttpMethod.DELETE.name(),
+                HttpMethod.OPTIONS.name()));
         config.setMaxAge(MAX_AGE);
         return config;
     }

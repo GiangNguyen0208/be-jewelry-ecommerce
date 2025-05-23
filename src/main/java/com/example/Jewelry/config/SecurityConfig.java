@@ -94,14 +94,19 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
-                .cors(cors -> cors.disable())
+//                .cors(cors -> cors.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/api/user/login",
                                 "/api/user/register",
                                 "/api/user/confirm",
                                 "/api/user/resend-confirmation",
-                                "/oauth2/**"
+                                "/oauth2/**",
+                                "/product/list",
+                                "/product/{productId}",
+                                "/reviews/product/**",
+                                "/api/reviews/product/{productId}/average-rating",
+                                "/api/reviews/product/{productId}/total-reviews"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
@@ -128,19 +133,19 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
-    @Bean
-    public WebMvcConfigurer corsConfigurer() {
-        return new WebMvcConfigurer() {
-            @Override
-            public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**")
-                        .allowedOrigins("http://localhost:3000")  // Đảm bảo cho phép frontend FE
-                        .allowedMethods("GET", "POST", "PUT", "DELETE")
-                        .allowedHeaders("*")
-                        .allowCredentials(true);
-            }
-        };
-    }
+//    @Bean
+//    public WebMvcConfigurer corsConfigurer() {
+//        return new WebMvcConfigurer() {
+//            @Override
+//            public void addCorsMappings(CorsRegistry registry) {
+//                registry.addMapping("/**")
+//                        .allowedOrigins("http://localhost:3000")  // Đảm bảo cho phép frontend FE
+//                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+//                        .allowedHeaders("*")
+//                        .allowCredentials(true);
+//            }
+//        };
+//    }
 
 
 }
