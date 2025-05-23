@@ -165,6 +165,7 @@ public class ProductResource {
 
         return ResponseEntity.ok(responseDTO);
     }
+
     private ProductDTO convertToDTO(Product product) {
         List<ImageDTO> imageDTOs = new ArrayList<>();
         if (product.getImages() != null) {
@@ -194,8 +195,8 @@ public class ProductResource {
                 .deletedAt(product.getDeletedAt())
                 .categoryId(product.getCategory() != null ? product.getCategory().getId() : 0)
                 .categoryName(product.getCategory() != null ? product.getCategory().getName() : null)
-                .averageRating(0.0)
-                .totalRating(0)
+                .averageRating(2)  //rating tam thoi
+                .totalRating(2)
                 .build();
     }
 
@@ -394,5 +395,31 @@ public class ProductResource {
         response.setResponseMessage("product Updated Successfully");
         response.setSuccess(true);
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    public ResponseEntity<ProductResponseDTO> getActiveProductList() {
+        List<Product> productList =  productService.getActiveProductListForShop();
+        List<ProductDTO> productDTOList = productList.stream().map((product) -> convertToDTO(product)).toList();
+        ProductResponseDTO responseDTO = new ProductResponseDTO();
+        responseDTO.setProductDTOs(productDTOList);
+        responseDTO.setSuccess(true);
+        responseDTO.setResponseMessage("Lấy danh sách sản phẩm trong shop thành công");
+        return ResponseEntity.ok(responseDTO);
+    }
+
+    public ResponseEntity<ProductResponseDTO> getProductById(int product_id) {
+        ProductResponseDTO responseDTO = new ProductResponseDTO();
+        Product product =  productService.getById(product_id);
+        if (product == null) {
+            responseDTO.setSuccess(false);
+            responseDTO.setResponseMessage("Không tìm thấy sản phẩm mã " + product_id);
+            return new ResponseEntity<>(responseDTO, HttpStatus.NOT_FOUND);
+        }
+
+        ProductDTO productDTO = convertToDTO(product);
+        responseDTO.setProductDTO(productDTO);
+        responseDTO.setSuccess(true);
+        responseDTO.setResponseMessage("Lấy danh sách sản phẩm trong shop thành công");
+        return ResponseEntity.ok(responseDTO);
     }
 }

@@ -88,22 +88,10 @@ public class ProductServiceImpl implements ProductService {
         return productDAO.saveAll(courses);
     }
     @Override
-    public List<ProductDTO> getActiveProductListForShop() {
+    public List<Product> getActiveProductListForShop() {
         List<Product> products = productDAO.findByDeletedFalse();
         return products.stream()
                 .filter(p -> "Active".equalsIgnoreCase(p.getStatus()))
-                .map(product -> ProductDTO.builder()
-                        .id(product.getId())
-                        .name(product.getName())
-                        .price(product.getPrice())
-                        .prevPrice(product.getPrevPrice())
-                        .imageURLs(product.getImages().stream()
-                                .map(img -> new ImageDTO(img.getId(), img.getUrl()))
-                                .collect(Collectors.toList()))
-                        .averageRating(2)  //rating tam thoi
-                        .totalRating(2)
-                        .categoryName(product.getCategory() != null ? product.getCategory().getName() : null)
-                        .build())
                 .toList();
 
     }

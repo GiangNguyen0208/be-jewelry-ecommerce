@@ -28,7 +28,7 @@ public interface ProductService {
 
     void deleteProduct(int productId);
 
-    List<ProductDTO> getActiveProductListForShop();
+    List<Product> getActiveProductListForShop();
 
     ProductDTO getProductDetailsForUser(int id);
 }
