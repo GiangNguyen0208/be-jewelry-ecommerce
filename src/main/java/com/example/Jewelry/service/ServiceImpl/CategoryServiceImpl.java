@@ -36,7 +36,6 @@ public class CategoryServiceImpl implements CategoryService {
         }
 
     }
-
     @Override
     public List<Category> getCategoriesByStatusIn(List<String> status) {
         return this.categoryDAO.findByStatusIn(status);
@@ -55,4 +54,6 @@ public class CategoryServiceImpl implements CategoryService {
     public List<Category> getAllCategoriesDeletedTrue() {
         return this.categoryDAO.findByDeletedTrue();
     }
+
+
 }
