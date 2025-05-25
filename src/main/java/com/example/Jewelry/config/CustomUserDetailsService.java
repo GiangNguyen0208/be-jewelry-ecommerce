@@ -19,7 +19,12 @@ public class CustomUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
 
         User user = this.userService.getUserByEmailAndStatus(email, Constant.ActiveStatus.ACTIVE.value());
-
+        if (!email.contains("@")) {
+            user = this.userService.getUserByUsernameAndStatus(email, Constant.ActiveStatus.ACTIVE.value());
+        }
+        if (user == null) {
+            throw new UsernameNotFoundException("User not found with email or username: " + email);
+        }
         CustomUserDetails customUserDetails = new CustomUserDetails(user);
 
         return customUserDetails;

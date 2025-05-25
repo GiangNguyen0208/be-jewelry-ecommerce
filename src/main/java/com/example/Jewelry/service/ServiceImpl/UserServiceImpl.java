@@ -185,4 +185,9 @@ public class UserServiceImpl implements UserService {
         return Optional.of(confirmationToken.getUser());
     }
 
+    @Override
+    public User getUserByUsernameAndStatus(String email, String value) {
+        return userDao.findByUsernameAndStatus(email, value);
+    }
+
 }
