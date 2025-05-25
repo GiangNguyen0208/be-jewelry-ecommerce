@@ -74,13 +74,16 @@ public class ProductController {
     }
     @GetMapping("/list")
     @Operation(summary = "API to show product list for user")
-    public ResponseEntity<ProductResponseDTO> showProductList() {
-        return productResource.getActiveProductList();
+    public ResponseEntity<List<ProductDTO>> showProductList() {
+        return ResponseEntity.ok(productService.getActiveProductListForShop());
     }
     @GetMapping("/{id}")
     @Operation(summary = "API to get single product for list page")
-    public ResponseEntity<ProductResponseDTO> getProductById(@PathVariable int id) {
-        return productResource.getProductById(id);
+    public ResponseEntity<ProductDTO> getProductById(@PathVariable int id) {
+        ProductDTO product = productService.getProductDetailsForUser(id);
+        return product != null
+                ? ResponseEntity.ok(product)
+                : ResponseEntity.notFound().build();
     }
 
 }

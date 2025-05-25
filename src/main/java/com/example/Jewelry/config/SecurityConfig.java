@@ -101,10 +101,14 @@ public class SecurityConfig {
                                 "/api/user/register",
                                 "/api/user/confirm",
                                 "/api/user/resend-confirmation",
+                                "/api/category/**",
+                                "/api/user/info/**",
+                                "/api/user/users",
+                                "/api/delivery/**",
                                 "/oauth2/**",
-                                "/product/list",
-                                "/product/{productId}",
-                                "/reviews/product/**",
+                                "/api/product/list",
+                                "/api/product/{productId}",
+                                "/api/reviews/product/**",
                                 "/api/reviews/product/{productId}/average-rating",
                                 "/api/reviews/product/{productId}/total-reviews"
                         ).permitAll()

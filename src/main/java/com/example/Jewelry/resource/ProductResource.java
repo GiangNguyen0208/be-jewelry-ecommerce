@@ -197,6 +197,7 @@ public class ProductResource {
                 .categoryName(product.getCategory() != null ? product.getCategory().getName() : null)
                 .averageRating(2)  //rating tam thoi
                 .totalRating(2)
+                .status(product.getStatus())
                 .build();
     }
 
@@ -398,8 +399,7 @@ public class ProductResource {
     }
 
     public ResponseEntity<ProductResponseDTO> getActiveProductList() {
-        List<Product> productList =  productService.getActiveProductListForShop();
-        List<ProductDTO> productDTOList = productList.stream().map((product) -> convertToDTO(product)).toList();
+        List<ProductDTO> productDTOList = productService.getActiveProductListForShop();
         ProductResponseDTO responseDTO = new ProductResponseDTO();
         responseDTO.setProductDTOs(productDTOList);
         responseDTO.setSuccess(true);

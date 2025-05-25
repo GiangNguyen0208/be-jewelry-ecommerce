@@ -35,22 +35,22 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         String token = null;
         String username = null;
 
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            token = authHeader.substring(7);
-            username = jwtUtils.extractUsername(token);
-            System.out.println("[JwtAuthFilter] Found token for user: " + username);
-        }
+        // if (authHeader != null && authHeader.startsWith("Bearer ")) {
+        //     token = authHeader.substring(7);
+        //     username = jwtUtils.extractUsername(token);
+        //     System.out.println("[JwtAuthFilter] Found token for user: " + username);
+        // }
 
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-            if (jwtUtils.validateToken(token, userDetails)) {
-                UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authToken);
-                System.out.println("[JwtAuthFilter] Authenticated user: " + username);
-            }
-        }
+        // if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+        //     UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+        //     if (jwtUtils.validateToken(token, userDetails)) {
+        //         UsernamePasswordAuthenticationToken authToken =
+        //                 new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        //         authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+        //         SecurityContextHolder.getContext().setAuthentication(authToken);
+        //         System.out.println("[JwtAuthFilter] Authenticated user: " + username);
+        //     }
+        // }
 
         filterChain.doFilter(request, response);
     }
