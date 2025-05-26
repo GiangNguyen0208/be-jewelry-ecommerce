@@ -1,7 +1,9 @@
 package com.example.Jewelry.service.ServiceImpl;
 
 import java.util.List;
+import java.util.Optional;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -10,6 +12,7 @@ import com.example.Jewelry.entity.DeliveryAddress;
 import com.example.Jewelry.entity.User;
 import com.example.Jewelry.service.DeliveryAddressService;
 import com.example.Jewelry.service.UserService;
+import com.fasterxml.jackson.databind.util.BeanUtil;
 
 /***
  * Lớp hiện thực của service cho sổ địa chỉ
@@ -38,7 +41,16 @@ public class DevileryAddressServiceImpl implements DeliveryAddressService {
 
     @Override
     public DeliveryAddress updateDeliveryAddress(DeliveryAddress address) {
-        return deliveryAddressDAO.save(address);
+        // Find by IDs
+        Optional<DeliveryAddress> search = deliveryAddressDAO.findById(address.getId());
+        // Return null because no delivery address founded with id to update
+        if (!search.isPresent()) return null;
+
+        // Otherwise, clone it without id and owner
+        DeliveryAddress originalAddress = search.get();
+        BeanUtils.copyProperties(address, originalAddress, "id", "owner");
+
+        return deliveryAddressDAO.save(originalAddress);
     }
 
     @Override
