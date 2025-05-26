@@ -3,27 +3,28 @@ package com.example.Jewelry.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
-@Getter
-@Setter
+@Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CartItem {
+public class WishlistItem {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
     @ManyToOne
-    @JoinColumn(name = "product_id")
-    private Product product;
-
-    @ManyToOne
-    @JoinColumn(name = "user_id")
     private User user;
 
-    private int quantity;
+    @ManyToOne
+    private Product product;
 
-    private boolean deleted = false;
+    private LocalDateTime createdAt;
+
+    private boolean deleted;
 }
+
 
