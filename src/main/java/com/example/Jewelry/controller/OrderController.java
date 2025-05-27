@@ -1,6 +1,7 @@
 package com.example.Jewelry.controller;
 
 import com.example.Jewelry.dto.request.OrderRequestDTO;
+import com.example.Jewelry.dto.response.CommonAPIResForOrder;
 import com.example.Jewelry.dto.response.CommonApiResponse;
 import com.example.Jewelry.service.ServiceImpl.OrderServiceImpl;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/orders")
+@CrossOrigin(origins = "http://localhost:3000")
 public class OrderController {
 
     private final OrderServiceImpl orderService;
@@ -34,8 +36,8 @@ public class OrderController {
 
 
     @PostMapping("/create")
-    public ResponseEntity<CommonApiResponse> createOrder(@RequestBody OrderRequestDTO dto) {
-        CommonApiResponse response = orderService.createOrder(dto);
+    public ResponseEntity<CommonAPIResForOrder> createOrder(@RequestBody OrderRequestDTO dto) {
+        CommonAPIResForOrder response = orderService.createOrder(dto);
         if (response.isSuccess()) {
             return ResponseEntity.ok(response);
         } else {

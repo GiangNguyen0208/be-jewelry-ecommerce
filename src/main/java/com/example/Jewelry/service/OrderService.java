@@ -1,8 +1,8 @@
 package com.example.Jewelry.service;
 
 import com.example.Jewelry.dto.request.OrderRequestDTO;
-import com.example.Jewelry.dto.response.CommonApiResponse;
+import com.example.Jewelry.dto.response.CommonAPIResForOrder;
 
 public interface OrderService {
-    CommonApiResponse createOrder(OrderRequestDTO dto);
+    CommonAPIResForOrder createOrder(OrderRequestDTO dto);
 }

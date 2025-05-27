@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/verify")
+@CrossOrigin(origins = "http://localhost:3000")
 public class VerifyOTPController {
     private final OTPVerifyServiceImpl orderService;
 
@@ -16,5 +17,8 @@ public class VerifyOTPController {
     public ResponseEntity<CommonApiResponse> verifyOtp(@RequestBody OtpVerificationRequestDTO dto) {
         return ResponseEntity.ok(orderService.verifyOtp(dto));
     }
-
+    @PostMapping("/resend-otp")
+    public ResponseEntity<CommonApiResponse> verifyOtp(@RequestBody Integer orderID) {
+        return ResponseEntity.ok(orderService.resendOtp(orderID));
+    }
 }
