@@ -27,7 +27,7 @@ public class Order {
     private Double totalPrice;
 
     public enum OrderStatus {
-        PENDING, CONFIRM, CANCELLED
+        PENDING, CONFIRM, CANCELLED, PAID
     }
 
     @Enumerated(EnumType.STRING)

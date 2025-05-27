@@ -25,6 +25,7 @@ public class Payment {
     }
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "payment_method")
     private PaymentMethod paymentMethod;
 
     public enum PaymentStatus {
