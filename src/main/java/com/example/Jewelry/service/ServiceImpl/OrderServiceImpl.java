@@ -79,5 +79,9 @@ public class OrderServiceImpl implements OrderService {
         return CommonAPIResForOrder.success("Tạo đơn hàng thành công, vui lòng kiểm tra email để xác thực thanh toán bằng OTP.", order.getId());
     }
 
+    public List<Order> getAllOrders() {
+        return orderRepo.findAll();
+    }
+
 
 }
