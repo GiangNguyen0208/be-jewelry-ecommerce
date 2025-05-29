@@ -1,5 +1,8 @@
 package com.example.Jewelry.controller;
 
+import com.example.Jewelry.resource.UserResource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.Jewelry.dto.DeliveryAddressDTO;
@@ -29,6 +32,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 @RequestMapping("/api/delivery")
 @CrossOrigin(origins = "http://localhost:3000")
 public class DeliveryAddressController {
+    private final Logger LOG = LoggerFactory.getLogger(UserResource.class);
 
     @Autowired
     private UserService userService;
@@ -56,14 +60,12 @@ public class DeliveryAddressController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    
-
     private DeliveryAddress toDeliveryAddress(DeliveryAddressDTO addressDTO) {
         DeliveryAddress address = new DeliveryAddress();
         BeanUtils.copyProperties(addressDTO, address, "userID");
 
         User addressOwner = userService.getUserById(addressDTO.getUserID());
-        address.setOwner(addressOwner);
+        address.setUser(addressOwner);
 
         return address;
     }
@@ -71,14 +73,15 @@ public class DeliveryAddressController {
     /** Thêm địa chỉ mới cho người dùng */
     @PostMapping("/add")
     public ResponseEntity<DeliveryAddressBookResponse> addNewDeliveryAddress(@RequestBody DeliveryAddressDTO newAddressDTO) {
+        LOG.info("Add a Address Request DTO " + newAddressDTO.toString());
         DeliveryAddressBookResponse response = new DeliveryAddressBookResponse();
         DeliveryAddress addingAddress = toDeliveryAddress(newAddressDTO);
+        LOG.info("Add a Address Request " + addingAddress.toString());
         DeliveryAddress ehrm = deliveryAddressService.addAddress(addingAddress);
-
         response.setAddress(DeliveryAddressDTO.convertDeliveryAddress(ehrm));
         response.setSuccess(true);
         response.setResponseMessage("Thêm thành công địa chỉ");
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return new ResponseEntity<DeliveryAddressBookResponse>(response, HttpStatus.OK);
     }
 
     /** Thêm địa chỉ mới cho người dùng */
@@ -86,8 +89,8 @@ public class DeliveryAddressController {
     public ResponseEntity<DeliveryAddressBookResponse> updateNewDeliveryAddress(@RequestBody DeliveryAddressDTO newAddressDTO) {
         DeliveryAddressBookResponse response = new DeliveryAddressBookResponse();
         DeliveryAddress addingAddress = toDeliveryAddress(newAddressDTO);
-        DeliveryAddress ehrm = deliveryAddressService.updateDeliveryAddress(addingAddress);
 
+        DeliveryAddress ehrm = deliveryAddressService.updateDeliveryAddress(addingAddress);
         response.setAddress(DeliveryAddressDTO.convertDeliveryAddress(ehrm));
         response.setSuccess(true);
         response.setResponseMessage("Cập nhật thành công địa chỉ");

@@ -141,11 +141,40 @@ public class ProductResource {
             return new ResponseEntity<ProductResponseDTO>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         } else {
             response.setProduct(saveProduct);
-            response.setResponseMessage("Course Created Successful, Add Course Section now....");
+            response.setResponseMessage("Product Created Successful, Add now....");
             response.setSuccess(true);
 
             return new ResponseEntity<ProductResponseDTO>(response, HttpStatus.OK);
         }
+    }
+
+    public ResponseEntity<ProductResponseDTO> fetchAllProductByCategory(String categoryName) {
+        ProductResponseDTO response = new ProductResponseDTO();
+        if (categoryName == null) {
+            response.setProducts(null);
+            response.setResponseMessage("Category Name null");
+            response.setSuccess(false);
+
+            return new ResponseEntity<ProductResponseDTO>(response, HttpStatus.BAD_REQUEST);
+        }
+
+        boolean categoryExists = categoryService.existsByName(categoryName);
+
+        if (!categoryExists) {
+            response.setProducts(null);
+            response.setResponseMessage("Category ID Not Found");
+            response.setSuccess(false);
+
+            return new ResponseEntity<ProductResponseDTO>(response, HttpStatus.NOT_FOUND);
+        }
+
+        List<Product> products = this.productService.getByCategoryNameAndStatus(categoryName, Constant.ActiveStatus.ACTIVE.value());
+
+        response.setProducts(products);
+        response.setResponseMessage("Fetch Product List By Category ID Successfully !");
+        response.setSuccess(false);
+
+        return new ResponseEntity<ProductResponseDTO>(response, HttpStatus.OK);
     }
 
     public ResponseEntity<ProductResponseDTO> fetchAllProduct() {
@@ -395,4 +424,6 @@ public class ProductResource {
         response.setSuccess(true);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
+
 }

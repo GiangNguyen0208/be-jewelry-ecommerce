@@ -128,4 +128,9 @@ public class ProductServiceImpl implements ProductService {
                 .build();
     }
 
+    @Override
+    public List<Product> getByCategoryNameAndStatus(String categoryName, String status) {
+        return productDAO.getByCategoryNameAndStatus(categoryName, status);
+    }
+
 }

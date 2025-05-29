@@ -102,8 +102,9 @@ public class SecurityConfig {
                                 "/api/user/confirm",
                                 "/api/user/resend-confirmation",
                                 "/oauth2/**",
-                                "/product/list",
-                                "/product/{productId}",
+                                "/api/product/list",
+                                "/api/product/{productId}",
+                                "/api/product/**",
                                 "/reviews/product/**",
                                 "/api/reviews/product/{productId}/average-rating",
                                 "/api/reviews/product/{productId}/total-reviews"
