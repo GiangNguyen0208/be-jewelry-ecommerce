@@ -4,6 +4,7 @@ import com.example.Jewelry.filter.JwtAuthFilter;
 import com.example.Jewelry.service.ServiceImpl.CustomOAuth2FailureHandler;
 import com.example.Jewelry.service.ServiceImpl.CustomOAuth2SuccessHandler;
 import com.example.Jewelry.service.ServiceImpl.CustomOAuth2UserService;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -100,16 +101,30 @@ public class SecurityConfig {
                                 "/api/user/register",
                                 "/api/user/confirm",
                                 "/api/user/resend-confirmation",
+                                "/api/user/users",
                                 "/oauth2/**",
                                 "/api/wishlist/**",
                                 "/api/cart/**",
                                 "/api/delivery/fetch-user/**",
                                 "/api/delivery/add",
                                 "/api/orders/create",
+                                "/api/orders/**",
                                 "/api/verify/verify-otp",
-                                "/api/verify/resend-otp"
+                                "/api/verify/resend-otp",
+                                "/api/product/list",
+                                "/api/product/{productId}",
+                                "/api/reviews/product/**",
+                                "/api/reviews/product/{productId}/average-rating",
+                                "/api/reviews/product/{productId}/total-reviews"
                         ).permitAll()
                         .anyRequest().authenticated()
+                )
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.setContentType("application/json");
+                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                            response.getWriter().write("{\"error\": \"Unauthorized\"}");
+                        })
                 )
                 .oauth2Login(oauth2 -> oauth2
                         .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
@@ -121,6 +136,7 @@ public class SecurityConfig {
         http.addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
+
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
@@ -134,19 +150,19 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
-    @Bean
-    public WebMvcConfigurer corsConfigurer() {
-        return new WebMvcConfigurer() {
-            @Override
-            public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**")
-                        .allowedOrigins("http://localhost:3000")  // Đảm bảo cho phép frontend FE
-                        .allowedMethods("GET", "POST", "PUT", "DELETE")
-                        .allowedHeaders("*")
-                        .allowCredentials(true);
-            }
-        };
-    }
+//    @Bean
+//    public WebMvcConfigurer corsConfigurer() {
+//        return new WebMvcConfigurer() {
+//            @Override
+//            public void addCorsMappings(CorsRegistry registry) {
+//                registry.addMapping("/**")
+//                        .allowedOrigins("http://localhost:3000")  // Đảm bảo cho phép frontend FE
+//                        .allowedMethods("GET", "POST", "PUT", "DELETE")
+//                        .allowedHeaders("*")
+//                        .allowCredentials(true);
+//            }
+//        };
+//    }
 
 
 }

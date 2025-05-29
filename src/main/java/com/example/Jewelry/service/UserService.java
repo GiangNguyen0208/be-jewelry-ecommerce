@@ -38,4 +38,6 @@ public interface UserService {
 
     boolean updateCTVStatus(int id, boolean isConfirmed);
     Optional<User> verifyResetPasswordToken(String token);
+
+    User getUserByUsernameAndStatus(String email, String value);
 }
