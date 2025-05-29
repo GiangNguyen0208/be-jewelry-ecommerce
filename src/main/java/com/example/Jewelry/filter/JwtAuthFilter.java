@@ -27,6 +27,16 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private CustomUserDetailsService userDetailsService;
 
     @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getServletPath();
+        return path.startsWith("/api/user/login") ||
+                path.startsWith("/api/user/register") ||
+                path.startsWith("/api/user/confirm") ||
+                path.startsWith("/api/user/resend-confirmation") ||
+                path.startsWith("/oauth2/**");
+    }
+
+    @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         System.out.println("[JwtAuthFilter] Request URI: " + request.getRequestURI());
@@ -35,25 +45,37 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         String token = null;
         String username = null;
 
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            token = authHeader.substring(7);
-            username = jwtUtils.extractUsername(token);
-            System.out.println("[JwtAuthFilter] Found token for user: " + username);
-        }
-
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-            if (jwtUtils.validateToken(token, userDetails)) {
-                UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authToken);
-                System.out.println("[JwtAuthFilter] Authenticated user: " + username);
+        try {
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                token = authHeader.substring(7);
+                username = jwtUtils.extractUsername(token);  // Có thể throw ExpiredJwtException
+                System.out.println("[JwtAuthFilter] Found token for user: " + username);
             }
-        }
 
-        filterChain.doFilter(request, response);
+            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                if (jwtUtils.validateToken(token, userDetails)) {
+                    UsernamePasswordAuthenticationToken authToken =
+                            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                    System.out.println("[JwtAuthFilter] Authenticated user: " + username);
+                }
+            }
+
+            filterChain.doFilter(request, response);
+
+        } catch (io.jsonwebtoken.ExpiredJwtException ex) {
+            System.out.println("[JwtAuthFilter] Token expired: " + ex.getMessage());
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("Token expired");
+        } catch (Exception e) {
+            System.out.println("[JwtAuthFilter] Token error: " + e.getMessage());
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("Invalid token");
+        }
     }
+
 
 
 }

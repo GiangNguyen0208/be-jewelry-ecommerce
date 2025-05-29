@@ -52,6 +52,26 @@ public class ProductDTO {
     // CTV and Admin add
     private int ctvOrAdminId;
 
+    public static ProductDTO fromEntity(Product product) {
+        if (product == null) return null;
+
+        List<ImageDTO> imageDTOs = null;
+        if (product.getImages() != null) {
+            imageDTOs = product.getImages().stream()
+                    .map(image -> new ImageDTO(image.getId(), image.getUrl()))
+                    .toList();
+        }
+
+        return ProductDTO.builder()
+                .id(product.getId())
+                .name(product.getName())
+                .price(product.getPrice())
+                .prevPrice(product.getPrevPrice())
+                .productIsBadge(product.getProductIsBadge())
+                .imageURLs(imageDTOs)
+                .build();
+    }
+
     public static Product toEntity(ProductDTO dto) {
         Product product = new Product();
         BeanUtils.copyProperties(dto, product, "id", "ctvOrAdminId", "categoryId");

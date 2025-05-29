@@ -9,7 +9,6 @@ import com.example.Jewelry.entity.ConfirmationToken;
 import com.example.Jewelry.entity.User;
 import com.example.Jewelry.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -27,9 +26,6 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private ConfirmationTokenService confirmationTokenService;
-
-    @Autowired
-    private BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Override
     public User addUser(User user) {

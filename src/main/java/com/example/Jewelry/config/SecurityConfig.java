@@ -94,14 +94,20 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
-                .cors(cors -> cors.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/api/user/login",
                                 "/api/user/register",
                                 "/api/user/confirm",
                                 "/api/user/resend-confirmation",
-                                "/oauth2/**"
+                                "/oauth2/**",
+                                "/api/wishlist/**",
+                                "/api/cart/**",
+                                "/api/delivery/fetch-user/**",
+                                "/api/delivery/add",
+                                "/api/orders/create",
+                                "/api/verify/verify-otp",
+                                "/api/verify/resend-otp"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
