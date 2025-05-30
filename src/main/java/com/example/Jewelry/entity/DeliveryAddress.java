@@ -1,11 +1,7 @@
 package com.example.Jewelry.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -20,9 +16,10 @@ public class DeliveryAddress {
     private int id;
 
     /** Chủ nhân của địa chỉ giao hàng, dùng để biết địa chỉ thuộc về sổ địa chỉ của người dùng nào */
-    @ManyToOne
-    @JoinColumn(nullable = false)
-    private User owner;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnore
+    @JoinColumn(name = "owner_id", nullable = false)
+    private User user;
 
     /** Tên người nhận (không nhất thiết là chính người dùng đó) */
     private String receiverName;

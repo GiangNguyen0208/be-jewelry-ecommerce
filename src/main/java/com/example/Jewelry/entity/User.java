@@ -54,5 +54,9 @@ public class User {
     private BigDecimal amount;
 
     private String status;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<DeliveryAddress> deliveryAddressList;
+
 }
 

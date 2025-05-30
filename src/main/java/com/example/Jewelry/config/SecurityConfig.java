@@ -114,6 +114,7 @@ public class SecurityConfig {
                                 "/api/product/list",
                                 "/api/product/{productId}",
                                 "/api/reviews/product/**",
+                                "/api/product/list",
                                 "/api/reviews/product/{productId}/average-rating",
                                 "/api/reviews/product/{productId}/total-reviews"
                         ).permitAll()

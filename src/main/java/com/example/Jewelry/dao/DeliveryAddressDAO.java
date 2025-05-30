@@ -9,6 +9,6 @@ import com.example.Jewelry.entity.User;
 
 public interface DeliveryAddressDAO extends JpaRepository<DeliveryAddress, Integer> {
 
-    List<DeliveryAddress> findByOwner(User owner);
+    List<DeliveryAddress> findAllByUser(User user);
 
 }
