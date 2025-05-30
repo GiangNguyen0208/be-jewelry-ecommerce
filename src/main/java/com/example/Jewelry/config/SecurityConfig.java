@@ -102,6 +102,7 @@ public class SecurityConfig {
                                 "/api/user/confirm",
                                 "/api/user/resend-confirmation",
                                 "/api/user/users",
+                                "/api/user/info/**",
                                 "/oauth2/**",
                                 "/api/wishlist/**",
                                 "/api/cart/**",
@@ -116,7 +117,8 @@ public class SecurityConfig {
                                 "/api/reviews/product/**",
                                 "/api/product/list",
                                 "/api/reviews/product/{productId}/average-rating",
-                                "/api/reviews/product/{productId}/total-reviews"
+                                "/api/reviews/product/{productId}/total-reviews",
+                                "/api/category/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
