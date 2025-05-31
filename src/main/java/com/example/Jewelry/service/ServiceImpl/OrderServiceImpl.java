@@ -2,18 +2,28 @@ package com.example.Jewelry.service.ServiceImpl;
 
 import com.example.Jewelry.dao.OrderDAO;
 import com.example.Jewelry.dto.CartItemDTO;
+import com.example.Jewelry.dto.OrderDTO;
 import com.example.Jewelry.dto.request.OrderRequestDTO;
 import com.example.Jewelry.dto.response.CommonAPIResForOrder;
 import com.example.Jewelry.entity.*;
 import com.example.Jewelry.dao.*;
 import com.example.Jewelry.service.OrderService;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
+
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -79,6 +89,64 @@ public class OrderServiceImpl implements OrderService {
         return CommonAPIResForOrder.success("Tạo đơn hàng thành công, vui lòng kiểm tra email để xác thực thanh toán bằng OTP.", order.getId());
     }
 
+    private String getCurrentUserEmail() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
+            throw new com.example.Jewelry.exception.BusinessException("Người dùng chưa được xác thực hoặc phiên làm việc không hợp lệ.");
+        }
+
+        Object principal = authentication.getPrincipal();
+        String userEmail = null;
+
+        if (principal instanceof UserDetails) {
+            userEmail = ((UserDetails) principal).getUsername();
+        } else if (principal instanceof OAuth2User) {
+            OAuth2User oAuth2User = (OAuth2User) principal;
+            userEmail = oAuth2User.getAttribute("email");
+            if (userEmail == null) {
+                userEmail = oAuth2User.getName();
+            }
+        } else {
+            throw new com.example.Jewelry.exception.BusinessException("Không thể xác định email người dùng từ thông tin xác thực không xác định.");
+        }
+
+        if (userEmail == null || userEmail.isEmpty()) {
+            throw new com.example.Jewelry.exception.BusinessException("Không thể lấy được email người dùng từ thông tin xác thực.");
+        }
+        return userEmail;
+    }
+
+    private OrderDTO mapToOrderListDTO(Order order) {
+        if (order == null) {
+            return null;
+        }
+        OrderDTO dto = new OrderDTO();
+        dto.setId(order.getId());
+        dto.setCreatedAt(order.getCreatedAt());
+        dto.setTotalPrice(order.getTotalPrice());
+        dto.setStatus(order.getStatus());
+        // trả về OderDTO với các trường còn lại là null
+        return dto;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<OrderDTO> getCurrentUserOrderHistory(Pageable pageable) {
+        String userEmail = getCurrentUserEmail();
+        //kiểm tra người dùng trong db
+        User user = userRepo.findByEmailId(userEmail);
+        if (user == null) {
+            throw new com.example.Jewelry.exception.ResourceNotFoundException("Người dùng với email " + userEmail + " không tìm thấy.");
+        }
+
+        Page<Order> orderPage = orderRepo.findByUserEmailOrderByCreatedAtDesc(userEmail, pageable);
+        //đổi order thành orderDTO
+        List<OrderDTO> orderDTOs = orderPage.getContent().stream()
+                .map(this::mapToOrderListDTO)
+                .collect(Collectors.toList());
+
+        return new PageImpl<>(orderDTOs, pageable, orderPage.getTotalElements());
+    }
     public List<Order> getAllOrders() {
         return orderRepo.findAll();
     }
