@@ -1,10 +1,12 @@
 package com.example.Jewelry.service.ServiceImpl;
 
+import com.example.Jewelry.dao.OrderDAO;
 import com.example.Jewelry.dao.ProductDAO;
 import com.example.Jewelry.dao.ReviewDAO;
 import com.example.Jewelry.dao.UserDAO;
 import com.example.Jewelry.dto.request.ReviewRequest;
 import com.example.Jewelry.dto.response.ReviewResponse;
+import com.example.Jewelry.entity.Order;
 import com.example.Jewelry.entity.Product;
 import com.example.Jewelry.entity.Review;
 import com.example.Jewelry.entity.User;
@@ -20,7 +22,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class ReviewServiceImpl implements ReviewService {
-
+    @Autowired
+    private OrderDAO orderDAO;
     @Autowired
     private ReviewDAO reviewDAO;
 
@@ -57,8 +60,17 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     private boolean hasUserPurchasedProduct(int userId, int productId) {
-        //chua co Order nen mac dinh la true
-        return true;
+        User user = userDAO.findById(userId).orElse(null);
+
+        if (user == null || user.getEmailId() == null || user.getEmailId().isEmpty()) {
+            return false;
+        }
+
+        return orderDAO.existsOrderWithProductByUserEmailAndStatus(
+                user.getEmailId(),
+                productId,
+                Order.OrderStatus.PAID
+        );
     }
 
     @Override

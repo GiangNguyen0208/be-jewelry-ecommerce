@@ -138,4 +138,32 @@ public class OrderController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Đã có lỗi xảy ra, vui lòng thử lại sau.");
         }
     }
+
+    @GetMapping("/me/{orderId}")
+    public ResponseEntity<?> getCurrentUserOrderDetail(@PathVariable Integer orderId) {
+        try {
+            OrderDTO orderDetail = orderService.getOrderDetailForCurrentUser(orderId);
+            return ResponseEntity.ok(orderDetail);
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (BusinessException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Đã có lỗi xảy ra khi xử lý yêu cầu của bạn.");
+        }
+    }
+
+    @PostMapping("/me/{orderId}/cancel")
+    public ResponseEntity<?> cancelCurrentUserOrder(@PathVariable Integer orderId) {
+        try {
+            OrderDTO cancelledOrder = orderService.cancelOrderForCurrentUser(orderId);
+            return ResponseEntity.ok(cancelledOrder);
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (BusinessException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Đã có lỗi xảy ra khi xử lý yêu cầu của bạn.");
+        }
+    }
 }

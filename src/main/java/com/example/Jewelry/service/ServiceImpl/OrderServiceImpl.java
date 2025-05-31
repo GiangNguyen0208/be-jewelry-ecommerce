@@ -1,12 +1,13 @@
 package com.example.Jewelry.service.ServiceImpl;
 
 import com.example.Jewelry.dao.OrderDAO;
-import com.example.Jewelry.dto.CartItemDTO;
-import com.example.Jewelry.dto.OrderDTO;
+import com.example.Jewelry.dto.*;
 import com.example.Jewelry.dto.request.OrderRequestDTO;
 import com.example.Jewelry.dto.response.CommonAPIResForOrder;
 import com.example.Jewelry.entity.*;
 import com.example.Jewelry.dao.*;
+import com.example.Jewelry.exception.BusinessException;
+import com.example.Jewelry.exception.ResourceNotFoundException;
 import com.example.Jewelry.service.OrderService;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -147,6 +148,111 @@ public class OrderServiceImpl implements OrderService {
 
         return new PageImpl<>(orderDTOs, pageable, orderPage.getTotalElements());
     }
+    private OrderItemDTO mapToOrderItemDTO(OrderItem orderItem) {
+        if (orderItem == null) {
+            return null;
+        }
+        Product product = null;
+        if (orderItem.getProductId() != null) {
+            product = productRepo.findById(orderItem.getProductId()).orElse(null);
+        }
+        OrderItemDTO rs =OrderItemDTO.convertItem(orderItem);
+                rs.setProductName(product != null ? product.getName() : "Sản phẩm không tồn tại");
+        return rs;
+    }
+    private OrderPaymentDetailsDTO mapToOrderPaymentDetailsDTO(Payment payment) {
+        if (payment == null) {
+            return null;
+        }
+        return OrderPaymentDetailsDTO.builder()
+                .paymentMethod(payment.getPaymentMethod())
+                .paymentStatus(payment.getPaymentStatus())
+                .paymentDate(payment.getPaymentDate())
+                .transactionId(payment.getTransactionId())
+                .build();
+    }
+
+    private OrderDTO mapToOrderDetailDTO(Order order, User user) {
+        if (order == null) {
+            return null;
+        }
+
+        List<OrderItemDTO> itemDTOs = order.getItems().stream()
+                .map(this::mapToOrderItemDTO)
+                .collect(Collectors.toList());
+
+        DeliveryAddressDTO deliveryAddressDTO = null;
+        if (order.getDeliveryAddress() != null) {
+            deliveryAddressDTO = DeliveryAddressDTO.convertDeliveryAddress(order.getDeliveryAddress());
+        }
+
+        OrderPaymentDetailsDTO paymentDetailsDTO = null;
+        if (order.getPayment() != null) {
+            paymentDetailsDTO = mapToOrderPaymentDetailsDTO(order.getPayment());
+        }
+
+        String ownerName = "";
+        if (user != null) {
+            ownerName = (user.getFirstName() != null ? user.getFirstName() : "") +
+                    " " +
+                    (user.getLastName() != null ? user.getLastName() : "");
+            ownerName = ownerName.trim();
+        }
+
+
+        return OrderDTO.builder()
+                .id(order.getId())
+                .ownerName(ownerName)
+                .userEmail(order.getUserEmail())
+                .deliveryAddress(deliveryAddressDTO)
+                .totalPrice(order.getTotalPrice())
+                .status(order.getStatus())
+                .createdAt(order.getCreatedAt())
+                .items(itemDTOs)
+                .paymentDetails(paymentDetailsDTO)
+                .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public OrderDTO getOrderDetailForCurrentUser(Integer orderId) {
+        String userEmail = getCurrentUserEmail();
+        User user = userRepo.findByEmailId(userEmail);
+        if (user == null) {
+            throw new ResourceNotFoundException("Người dùng với email " + userEmail + " không tìm thấy.");
+        }
+
+        Order order = orderRepo.findByIdAndUserEmail(orderId, userEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("Đơn hàng với ID " + orderId + " không tồn tại hoặc không thuộc về bạn."));
+
+        return mapToOrderDetailDTO(order, user);
+    }
+
+    @Override
+    @Transactional
+    public OrderDTO cancelOrderForCurrentUser(Integer orderId) {
+        String userEmail = getCurrentUserEmail();
+        User user = userRepo.findByEmailId(userEmail);
+        if (user == null) {
+            throw new ResourceNotFoundException("Người dùng với email " + userEmail + " không tìm thấy.");
+        }
+
+        Order order = orderRepo.findByIdAndUserEmail(orderId, userEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("Đơn hàng với ID " + orderId + " không tồn tại hoặc không thuộc về bạn."));
+
+        if (order.getStatus() != Order.OrderStatus.PENDING && order.getStatus() != Order.OrderStatus.CONFIRM) {
+            throw new BusinessException("Đơn hàng không thể hủy ở trạng thái hiện tại: " + order.getStatus());
+        }
+
+        order.setStatus(Order.OrderStatus.CANCELLED);
+        if (order.getPayment() != null) {
+            order.getPayment().setPaymentStatus(Payment.PaymentStatus.CANCELLED);
+        }
+
+        Order updatedOrder = orderRepo.save(order);
+        return mapToOrderDetailDTO(updatedOrder, user);
+    }
+
     public List<Order> getAllOrders() {
         return orderRepo.findAll();
     }
