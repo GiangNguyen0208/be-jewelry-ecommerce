@@ -426,4 +426,103 @@ public class ProductResource {
     }
 
 
+    public ResponseEntity<ProductResponseDTO> createProductAuction(AddProductRequestDTO request) {
+        LOG.info("received request for adding the PRODUCT AUCTION");
+
+        ProductResponseDTO response = new ProductResponseDTO();
+
+        if (request == null) {
+            response.setResponseMessage("missing request body");
+            response.setSuccess(false);
+            return new ResponseEntity<ProductResponseDTO>(response, HttpStatus.BAD_REQUEST);
+        }
+
+        if (request.getCategoryId() == 0 || request.getDescription() == null
+                || request.getName() == null) {
+
+            response.setResponseMessage("missing input " + Boolean.toString(request.getCategoryId() == 0)
+                    + "::" + Boolean.toString(request.getDescription() == null)
+                    + "::" + Boolean.toString(request.getName() == null));
+            response.setSuccess(false);
+            return new ResponseEntity<ProductResponseDTO>(response, HttpStatus.BAD_REQUEST);
+        }
+
+        Category category = this.categoryService.getCategoryById(request.getCategoryId());
+
+        if (category == null) {
+            response.setResponseMessage("category not found");
+            response.setSuccess(false);
+            return new ResponseEntity<ProductResponseDTO>(response, HttpStatus.BAD_REQUEST);
+        }
+
+        User ctvOrAdmin = this.userService.getUserById(request.getCtvOrAdminId());
+
+        if (ctvOrAdmin == null) {
+            response.setResponseMessage("User not found");
+            response.setSuccess(false);
+            return new ResponseEntity<ProductResponseDTO>(response, HttpStatus.BAD_REQUEST);
+        }
+
+        Product product = AddProductRequestDTO.toEntity(request);
+        product.setProductIsBadge(request.getProductIsBadge());
+        product.setDeleted(false);
+        product.setCategory(category);
+        product.setStatus(Constant.ActiveStatus.OPENAUCTION.value());
+
+        // Upload ảnh và gán vào danh sách
+        List<Image> images = new ArrayList<>();
+        if (request.getImages() != null) {
+            for (MultipartFile imageFile : request.getImages()) {
+                if (!imageFile.isEmpty()) {
+                    try {
+                        // Ví dụ: upload ảnh và nhận lại URL (thay thế bằng logic thực tế của bạn)
+                        String imageUrl = storageService.storeProductImage(imageFile); // cần tạo service
+
+                        Image img = new Image();
+                        img.setUrl(imageUrl);
+                        img.setProduct(product); // liên kết ngược
+
+                        images.add(img);
+                    } catch (Exception e) {
+                        LOG.error("Failed to upload image", e);
+                    }
+                }
+            }
+        }
+
+        product.setImages(images);
+
+        Product saveProduct = this.productService.add(product);
+
+        if (saveProduct == null) {
+            response.setResponseMessage("Failed to add the course");
+            response.setSuccess(false);
+
+            return new ResponseEntity<ProductResponseDTO>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        } else {
+            response.setProduct(saveProduct);
+            response.setResponseMessage("Product Created Successful, Add now....");
+            response.setSuccess(true);
+
+            return new ResponseEntity<ProductResponseDTO>(response, HttpStatus.OK);
+        }
+    }
+
+    public ResponseEntity<ProductResponseDTO> fetchAllProductAuction() {
+        List<Product> products = productService.fetchAllProductOpenAuction(Constant.ActiveStatus.OPENAUCTION.value())
+                .stream()
+                .filter(product -> !product.isDeleted())
+                .toList();
+
+        List<ProductDTO> productDTOs = products.stream()
+                .map(this::convertToDTO)
+                .toList();
+
+        ProductResponseDTO responseDTO = new ProductResponseDTO();
+        responseDTO.setProductDTOs(productDTOs);
+        responseDTO.setResponseMessage("Fetched all products successfully");
+
+        return ResponseEntity.ok(responseDTO);
+
+    }
 }

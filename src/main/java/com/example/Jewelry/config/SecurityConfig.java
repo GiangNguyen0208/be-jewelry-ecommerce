@@ -105,6 +105,7 @@ public class SecurityConfig {
                                 "/api/product/list",
                                 "/api/product/{productId}",
                                 "/api/product/**",
+                                "/api/reverse-auction/**",
                                 "/reviews/product/**",
                                 "/api/reviews/product/{productId}/average-rating",
                                 "/api/reviews/product/{productId}/total-reviews"

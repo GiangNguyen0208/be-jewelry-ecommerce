@@ -22,4 +22,7 @@ public interface ProductDAO extends JpaRepository<Product, Integer> {
 
     @Query("SELECT p FROM Product p WHERE p.status = :status AND p.category.name = :categoryName")
     List<Product> getByCategoryNameAndStatus(@Param(("categoryName")) String categoryName, @Param(("status")) String status);
+
+    @Query("SELECT p FROM Product p WHERE p.status = :status")
+    List<Product> findAllByStatusOpenAuction(@Param("status") String status);
 }
