@@ -1,13 +1,14 @@
 package com.example.Jewelry.service;
 
-import java.util.List;
-
+import com.example.Jewelry.dto.OrderDTO;
 import com.example.Jewelry.dto.request.OrderRequestDTO;
 import com.example.Jewelry.dto.response.CommonAPIResForOrder;
-import com.example.Jewelry.entity.Order;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface OrderService {
     CommonAPIResForOrder createOrder(OrderRequestDTO dto);
-    List<Order> getAllOrders();
-    Order getSingleOrder(int orderID);
+    Page<OrderDTO> getCurrentUserOrderHistory(Pageable pageable);
+    OrderDTO getOrderDetailForCurrentUser(Integer orderId);
+    OrderDTO cancelOrderForCurrentUser(Integer orderId);
 }

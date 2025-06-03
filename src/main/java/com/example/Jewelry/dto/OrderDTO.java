@@ -5,8 +5,15 @@ import java.util.List;
 
 import com.example.Jewelry.entity.Order.OrderStatus;
 
+import jdk.jshell.Snippet;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 @Data
 public class OrderDTO {
 
@@ -18,5 +25,7 @@ public class OrderDTO {
     private OrderStatus status;
     private LocalDateTime createdAt;
     private List<OrderItemDTO> items;
-    
+    private OrderPaymentDetailsDTO paymentDetails;
+
+
 }
