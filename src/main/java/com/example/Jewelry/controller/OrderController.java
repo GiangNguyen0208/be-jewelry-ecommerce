@@ -1,15 +1,25 @@
 package com.example.Jewelry.controller;
 
+import com.example.Jewelry.dao.ProductDAO;
 import com.example.Jewelry.dao.UserDAO;
 import com.example.Jewelry.dto.DeliveryAddressDTO;
 import com.example.Jewelry.dto.OrderDTO;
 import com.example.Jewelry.dto.OrderItemDTO;
+import com.example.Jewelry.dto.OrderPaymentDetailsDTO;
+import com.example.Jewelry.dto.PaymentDTO;
 import com.example.Jewelry.dto.request.OrderRequestDTO;
 import com.example.Jewelry.dto.response.CommonAPIResForOrder;
 import com.example.Jewelry.dto.response.OrderDTOResponse;
+import com.example.Jewelry.entity.Image;
 import com.example.Jewelry.entity.Order;
+import com.example.Jewelry.entity.Payment;
+import com.example.Jewelry.entity.Order.OrderStatus;
+import com.example.Jewelry.entity.Product;
 import com.example.Jewelry.entity.User;
 import com.example.Jewelry.exception.ResourceNotFoundException;
+import com.example.Jewelry.resource.ProductResource;
+import com.example.Jewelry.service.ProductService;
+import com.example.Jewelry.service.UserService;
 import com.example.Jewelry.service.ServiceImpl.OrderServiceImpl;
 import com.example.Jewelry.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +43,8 @@ public class OrderController {
 
     private final OrderServiceImpl orderService;
     private final UserDAO userDao;
+    private final UserService userService;
+    private final ProductService productService;
 //  this is
 //    {
 //        "userId": 3,
@@ -63,31 +75,6 @@ public class OrderController {
         }
     }
 
-    @GetMapping("/fetch/full")
-    public ResponseEntity<OrderDTOResponse> getAllOrders() {
-        List<Order> list = orderService.getAllOrders();
-        List<OrderDTO> uh = list.stream().map((o) -> {
-            OrderDTO result = new OrderDTO();
-            User user = userDao.findByEmailId(o.getUserEmail());
-            BeanUtils.copyProperties(o, result);
-            result.setDeliveryAddress(DeliveryAddressDTO.convertDeliveryAddress(o.getDeliveryAddress()));
-            result.setItems(OrderItemDTO.convertItemList(o.getItems()));
-            result.setOwnerName(user.getLastName() + " " + user.getFirstName());
-            return result;
-        }).toList();
-        OrderDTOResponse response = new OrderDTOResponse();
-        response.setSuccess(true);
-        response.setResponseMessage("Yipee");
-        response.setOrderDTOList(uh);
-
-        if (response.isSuccess()) {
-            return ResponseEntity.ok(response);
-        } else {
-            return ResponseEntity.badRequest().body(response);
-        }
-    }
-
-
     @GetMapping("/fetch/all")
     public ResponseEntity<OrderDTOResponse> getAllOrderDTOs() {
         List<Order> list = orderService.getAllOrders();
@@ -103,6 +90,66 @@ public class OrderController {
         response.setSuccess(true);
         response.setResponseMessage("Yipee");
         response.setOrderDTOList(uh);
+
+        if (response.isSuccess()) {
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    @GetMapping("/fetch/detail/{orderID}")
+    public ResponseEntity<OrderDTOResponse> getSingleOrderDetail(@PathVariable int orderID) {
+        Order singleOrder = orderService.getSingleOrder(orderID);
+        OrderDTO result = new OrderDTO();
+        User user = userService.getUserByEmailid(singleOrder.getUserEmail());
+        BeanUtils.copyProperties(singleOrder, result);
+        /** Payment DTO */
+        Payment payment = singleOrder.getPayment();
+        OrderPaymentDetailsDTO pDto = new OrderPaymentDetailsDTO();
+        pDto.setTransactionId(payment.getTransactionId());
+        pDto.setPaymentDate(payment.getPaymentDate());
+        pDto.setPaymentMethod(payment.getPaymentMethod());
+        pDto.setPaymentStatus(payment.getPaymentStatus());
+        // Payment
+        result.setPaymentDetails(pDto);
+        result.setDeliveryAddress(DeliveryAddressDTO.convertDeliveryAddress(singleOrder.getDeliveryAddress()));
+            List<OrderItemDTO> itemLists = OrderItemDTO.convertItemList(singleOrder.getItems());
+            itemLists.forEach((item) -> {
+                Product product = productService.getById(item.getProductId());
+                Image pImages = product.getImages() != null ? product.getImages().get(0) : null;
+                item.setProductName(product.getName());
+                item.setProductImageUrl(pImages == null ? null : pImages.getUrl());
+                item.setProductId(product.getId());
+            });
+            result.setItems(itemLists);
+        result.setOwnerName(user.getLastName() + " " + user.getFirstName());
+        OrderDTOResponse response = new OrderDTOResponse();
+        response.setSuccess(true);
+        response.setResponseMessage("Yipee");
+        response.setOrder(result);
+
+        if (response.isSuccess()) {
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    @PostMapping("/update/{orderID}")
+    public ResponseEntity<OrderDTOResponse> updateOrderStatus(@PathVariable int orderID, @RequestParam OrderStatus status) {
+        OrderDTOResponse response = new OrderDTOResponse();
+        // nếu ko lấy được, thì báo lỗi thất bại
+        Order singleOrder = orderService.getSingleOrder(orderID);
+        if (singleOrder == null) {
+            response.setSuccess(false);
+            response.setResponseMessage("Could not get the order to set status to");
+        }
+        else {
+            boolean state = orderService.updateOrderStatus(singleOrder, status);
+            response.setSuccess(state);
+            response.setResponseMessage(state ? "Cập nhật thành công" : "Cập nhật không thành công");
+        }
 
         if (response.isSuccess()) {
             return ResponseEntity.ok(response);

@@ -113,6 +113,10 @@ public class ProductServiceImpl implements ProductService {
                         .averageRating(reviewService.getAverageRatingForProduct(product.getId()))
                         .totalRating(reviewService.getTotalReviewsForProduct(product.getId()))
                         .categoryName(product.getCategory() != null ? product.getCategory().getName() : null)
+                .brand(product.getBrand())
+                .productMaterial(product.getProductMaterial())
+                .occasion(product.getOccasion())
+                .productIsBadge(product.getProductIsBadge())
                         .build())
                 .toList();
 
@@ -137,10 +141,27 @@ public class ProductServiceImpl implements ProductService {
                 .imageURLs(product.getImages().stream()
                         .map(img -> new ImageDTO(img.getId(), img.getUrl()))
                         .collect(Collectors.toList()))
+                .averageRating(2) // sẽ thay sau nếu có
+                .totalRating(2)
+                .categoryName(product.getCategory() != null ? product.getCategory().getName() : null)
+                .brand(product.getBrand())
+                .productMaterial(product.getProductMaterial())
+                .description(product.getDescription())
+                .price(product.getPrice())
+                .size(product.getSize())
+                .occasion(product.getOccasion())
+                .prevPrice(product.getPrevPrice())
+                .productIsBadge(product.getProductIsBadge())
+                .status(product.getStatus())
                 .categoryName(product.getCategory() != null ? product.getCategory().getName() : null)
                 .averageRating(reviewService.getAverageRatingForProduct(product.getId()))
                 .totalRating(reviewService.getTotalReviewsForProduct(product.getId()))
                 .build();
+    }
+
+    @Override
+    public List<Product> getByCategoryNameAndStatus(String categoryName, String status) {
+        return productDAO.getByCategoryNameAndStatus(categoryName, status);
     }
 
 }

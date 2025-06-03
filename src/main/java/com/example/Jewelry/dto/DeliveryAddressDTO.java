@@ -32,7 +32,7 @@ public class DeliveryAddressDTO {
     public static DeliveryAddressDTO convertDeliveryAddress(DeliveryAddress address) {
         DeliveryAddressDTO result = new DeliveryAddressDTO();
         BeanUtils.copyProperties(address, result);
-        result.setUserID(address.getOwner().getId());
+        result.setUserID(address.getUser().getId());
         return result;
     }
 }

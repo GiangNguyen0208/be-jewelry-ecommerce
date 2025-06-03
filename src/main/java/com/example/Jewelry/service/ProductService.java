@@ -31,4 +31,6 @@ public interface ProductService {
     List<ProductDTO> getActiveProductListForShop();
 
     ProductDTO getProductDetailsForUser(int id);
+
+    List<Product> getByCategoryNameAndStatus(String categoryName, String status);
 }

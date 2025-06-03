@@ -31,14 +31,13 @@ public class DevileryAddressServiceImpl implements DeliveryAddressService {
         if (user == null) {
             return null;
         }
-        return deliveryAddressDAO.findByOwner(user);
+        return deliveryAddressDAO.findAllByUser(user);
     }
 
     @Override
     public DeliveryAddress addAddress(DeliveryAddress address) {
         return deliveryAddressDAO.save(address);
     }
-
     @Override
     public DeliveryAddress updateDeliveryAddress(DeliveryAddress address) {
         // Find by IDs

@@ -14,7 +14,7 @@ public class OrderDTOResponse extends CommonAPIResForOrder {
 
     private List<OrderDTO> orderDTOList;
     private List<Order> orderList;
-    private Order order;
+    private OrderDTO order;
     
 
 }

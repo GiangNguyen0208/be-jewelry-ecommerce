@@ -62,7 +62,7 @@ public class JewelryApplication implements CommandLineRunner {
 
 
 			DeliveryAddress deliveryAddress = new DeliveryAddress();
-			deliveryAddress.setOwner(user);
+			deliveryAddress.setUser(user);
 			deliveryAddress.setBuildingAddress("25/12 KP11");
 			deliveryAddress.setProvinceName("Đồng Nai");
 			deliveryAddress.setDistrictName("Biên Hòa");

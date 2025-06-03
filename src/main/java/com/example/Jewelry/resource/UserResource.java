@@ -76,7 +76,7 @@ public class UserResource {
     /** đăng nhập */
     public ResponseEntity<UserLoginResponse> login(UserLoginRequest loginRequest) {
 
-        LOG.info("Received request for User Login");
+        LOG.info("Received request for User Login", loginRequest.toString());
 
         UserLoginResponse response = new UserLoginResponse();
 
@@ -96,7 +96,7 @@ public class UserResource {
             response.setResponseMessage("User with this Email Id not registered in System!!!");
             response.setSuccess(false);
 
-            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
         }
 
         List<GrantedAuthority> authorities = Arrays.asList(new SimpleGrantedAuthority(user.getRole()));
@@ -471,5 +471,9 @@ public class UserResource {
         return new ResponseEntity<>(response, HttpStatus.OK);
 
 
+    }
+
+    public ResponseEntity<UserDTO> getUserById(int userId) {
+        return new ResponseEntity<UserDTO>(UserDTO.toUserDtoEntity(userService.getUserById(userId)), HttpStatus.OK);
     }
 }
