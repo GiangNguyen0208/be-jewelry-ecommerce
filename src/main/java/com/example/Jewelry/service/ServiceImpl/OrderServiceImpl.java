@@ -255,15 +255,38 @@ public class OrderServiceImpl implements OrderService {
     }
 
     public List<Order> getAllOrders() {
+        String userEmail = getCurrentUserEmail();
+        User user = userRepo.findByEmailId(userEmail);
+        if (user == null) {
+            throw new ResourceNotFoundException("Người dùng với email " + userEmail + " không tìm thấy.");
+        }
+        if (user.getRole() == null || !user.getRole().equalsIgnoreCase("admin")) {
+            throw new ResourceNotFoundException("Người dùng với email " + userEmail + " không phải là admin.");
+        }
         return orderRepo.findAll();
     }
 
     public Order getSingleOrder(int orderID) {
+        String userEmail = getCurrentUserEmail();
+        User user = userRepo.findByEmailId(userEmail);
+        if (user == null) {
+            throw new ResourceNotFoundException("Người dùng với email " + userEmail + " không tìm thấy.");
+        }
+        if (user.getRole() == null || !user.getRole().equalsIgnoreCase("admin")) {
+            throw new ResourceNotFoundException("Người dùng với email " + userEmail + " không phải là admin.");
+        }
         return orderRepo.findById(orderID).orElse(null);
     }
 
-
     public boolean updateOrderStatus(Order singleOrder, OrderStatus newStatus) {
+        String userEmail = getCurrentUserEmail();
+        User user = userRepo.findByEmailId(userEmail);
+        if (user == null) {
+            throw new ResourceNotFoundException("Người dùng với email " + userEmail + " không tìm thấy.");
+        }
+        if (user.getRole() == null || !user.getRole().equalsIgnoreCase("admin")) {
+            throw new ResourceNotFoundException("Người dùng với email " + userEmail + " không phải là admin.");
+        }
         OrderStatus oldStatus = singleOrder.getStatus();
         // you can not update a cancelled or confirmed order
         if (oldStatus == OrderStatus.CANCELLED || oldStatus == OrderStatus.CONFIRM)
