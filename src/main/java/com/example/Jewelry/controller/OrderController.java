@@ -6,11 +6,12 @@ import com.example.Jewelry.dto.OrderDTO;
 import com.example.Jewelry.dto.OrderItemDTO;
 import com.example.Jewelry.dto.request.OrderRequestDTO;
 import com.example.Jewelry.dto.response.CommonAPIResForOrder;
-import com.example.Jewelry.dto.response.CommonApiResponse;
 import com.example.Jewelry.dto.response.OrderDTOResponse;
 import com.example.Jewelry.entity.Order;
 import com.example.Jewelry.entity.User;
+import com.example.Jewelry.exception.ResourceNotFoundException;
 import com.example.Jewelry.service.ServiceImpl.OrderServiceImpl;
+import com.example.Jewelry.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
@@ -18,6 +19,11 @@ import java.util.List;
 import org.springframework.beans.BeanUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 
 @RestController
 @RequiredArgsConstructor
@@ -26,7 +32,7 @@ import org.springframework.web.bind.annotation.*;
 public class OrderController {
 
     private final OrderServiceImpl orderService;
-    private final UserDAO userController;
+    private final UserDAO userDao;
 //  this is
 //    {
 //        "userId": 3,
@@ -62,7 +68,7 @@ public class OrderController {
         List<Order> list = orderService.getAllOrders();
         List<OrderDTO> uh = list.stream().map((o) -> {
             OrderDTO result = new OrderDTO();
-            User user = userController.findByEmailId(o.getUserEmail());
+            User user = userDao.findByEmailId(o.getUserEmail());
             BeanUtils.copyProperties(o, result);
             result.setDeliveryAddress(DeliveryAddressDTO.convertDeliveryAddress(o.getDeliveryAddress()));
             result.setItems(OrderItemDTO.convertItemList(o.getItems()));
@@ -87,7 +93,7 @@ public class OrderController {
         List<Order> list = orderService.getAllOrders();
         List<OrderDTO> uh = list.stream().map((o) -> {
             OrderDTO result = new OrderDTO();
-            User user = userController.findByEmailId(o.getUserEmail());
+            User user = userDao.findByEmailId(o.getUserEmail());
             BeanUtils.copyProperties(o, result);
             result.setDeliveryAddress(DeliveryAddressDTO.convertDeliveryAddress(o.getDeliveryAddress()));
             result.setOwnerName(user.getLastName() + " " + user.getFirstName());
@@ -105,4 +111,59 @@ public class OrderController {
         }
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<?> getCurrentUserOrderHistory(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt,desc") String[] sort) {
+
+        Pageable pageable;
+        try {
+            Sort.Direction direction = Sort.Direction.fromString(sort.length > 1 ? sort[1].toUpperCase() : "DESC");
+            Sort sortOrder = Sort.by(direction, sort[0]);
+            pageable = PageRequest.of(page, size, sortOrder);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body("Tham số sắp xếp không hợp lệ. Ví dụ: 'createdAt,desc' hoặc 'totalPrice,asc'.");
+        }
+
+        try {
+            Page<OrderDTO> orderHistoryPage = orderService.getCurrentUserOrderHistory(pageable);
+            return ResponseEntity.ok(orderHistoryPage);
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (BusinessException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+        } catch (RuntimeException e) {
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Đã có lỗi xảy ra, vui lòng thử lại sau.");
+        }
+    }
+
+    @GetMapping("/me/{orderId}")
+    public ResponseEntity<?> getCurrentUserOrderDetail(@PathVariable Integer orderId) {
+        try {
+            OrderDTO orderDetail = orderService.getOrderDetailForCurrentUser(orderId);
+            return ResponseEntity.ok(orderDetail);
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (BusinessException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Đã có lỗi xảy ra khi xử lý yêu cầu của bạn.");
+        }
+    }
+
+    @PostMapping("/me/{orderId}/cancel")
+    public ResponseEntity<?> cancelCurrentUserOrder(@PathVariable Integer orderId) {
+        try {
+            OrderDTO cancelledOrder = orderService.cancelOrderForCurrentUser(orderId);
+            return ResponseEntity.ok(cancelledOrder);
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (BusinessException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Đã có lỗi xảy ra khi xử lý yêu cầu của bạn.");
+        }
+    }
 }

@@ -1,5 +1,6 @@
 package com.example.Jewelry.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -8,6 +9,8 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Set;
+
 
 @Data
 @Entity
@@ -54,5 +57,8 @@ public class User {
     private BigDecimal amount;
 
     private String status;
+
+    @OneToMany(mappedBy = "userId", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Set<Review> reviews;
 }
 
