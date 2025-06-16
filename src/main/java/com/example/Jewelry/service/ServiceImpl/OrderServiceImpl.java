@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +25,7 @@ public class OrderServiceImpl implements OrderService {
     private final UserDAO userRepo;
     private final DeliveryAddressDAO deliveryAddressRepo;
     private final EmailServiceImpl otpService;
+    private final CartItemDAO cartItemRepo;
 
     @Override
     @Transactional
@@ -45,11 +47,20 @@ public class OrderServiceImpl implements OrderService {
         order.setCreatedAt(LocalDateTime.now());
 
         List<OrderItem> items = new ArrayList<>();
+        List<CartItem> cartItemsToUpdate = new ArrayList<>();
         double total = 0;
+
 
         for (CartItemDTO itemDTO : dto.getCartItems()) {
             Product product = productRepo.findById(itemDTO.getProductId())
                     .orElseThrow(() -> new IllegalArgumentException("Sản phẩm không tồn tại"));
+
+            List<CartItem> matchingCartItems = cartItemRepo.findAllByUserAndProductAndDeletedFalse(user, product);
+            for (CartItem cartItem : matchingCartItems) {
+                System.out.println(cartItem);
+                cartItem.setDeleted(true);
+                cartItemsToUpdate.add(cartItem);
+            }
 
             OrderItem item = new OrderItem();
             item.setOrder(order);
@@ -60,6 +71,7 @@ public class OrderServiceImpl implements OrderService {
             total += product.getPrice() * itemDTO.getQuantity();
             items.add(item);
         }
+
 
         double discount = dto.getDiscount() != null ? dto.getDiscount() : 0.0;
         order.setItems(items);
@@ -75,9 +87,26 @@ public class OrderServiceImpl implements OrderService {
         order.setPayment(payment);
 
         orderRepo.save(order);
+        cartItemRepo.saveAll(cartItemsToUpdate);
 
         return CommonAPIResForOrder.success("Tạo đơn hàng thành công, vui lòng kiểm tra email để xác thực thanh toán bằng OTP.", order.getId());
     }
 
+
+    public CommonAPIResForOrder getOrderStatus(Integer orderId) {
+        Optional<Order> orderOpt = orderRepo.findById(orderId);
+        if (orderOpt.isEmpty()) {
+            return CommonAPIResForOrder.fail("Không tìm thấy đơn hàng", orderId);
+        }
+
+        Order order = orderOpt.get();
+        boolean isPaid = order.getPayment().getPaymentStatus() == Payment.PaymentStatus.PAID;
+
+        if (isPaid) {
+            return CommonAPIResForOrder.success("Đơn hàng đã được thanh toán", orderId);
+        } else {
+            return CommonAPIResForOrder.fail("Đơn hàng chưa được thanh toán", orderId);
+        }
+    }
 
 }

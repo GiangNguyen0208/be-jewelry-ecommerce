@@ -5,4 +5,5 @@ import com.example.Jewelry.dto.response.CommonAPIResForOrder;
 
 public interface OrderService {
     CommonAPIResForOrder createOrder(OrderRequestDTO dto);
+
 }

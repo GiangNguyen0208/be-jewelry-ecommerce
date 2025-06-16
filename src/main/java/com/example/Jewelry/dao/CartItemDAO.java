@@ -14,5 +14,7 @@ public interface CartItemDAO extends JpaRepository<CartItem, Integer> {
 
     List<CartItem> findByUserAndDeletedFalse(User user);
 
+    List<CartItem> findAllByUserAndProductAndDeletedFalse(User user, Product product);
+
 }
 

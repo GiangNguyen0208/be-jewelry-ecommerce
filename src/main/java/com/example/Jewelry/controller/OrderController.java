@@ -2,7 +2,6 @@ package com.example.Jewelry.controller;
 
 import com.example.Jewelry.dto.request.OrderRequestDTO;
 import com.example.Jewelry.dto.response.CommonAPIResForOrder;
-import com.example.Jewelry.dto.response.CommonApiResponse;
 import com.example.Jewelry.service.ServiceImpl.OrderServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -44,5 +43,13 @@ public class OrderController {
             return ResponseEntity.badRequest().body(response);
         }
     }
+
+    @GetMapping("/status/{orderId}")
+    public ResponseEntity<CommonAPIResForOrder> getOrderStatus(@PathVariable Integer orderId) {
+        CommonAPIResForOrder response = orderService.getOrderStatus(orderId);
+        return ResponseEntity.ok(response);
+    }
+
+
 
 }
