@@ -82,10 +82,12 @@ public class SecurityConfig {
                                 "/api/product/{productId}",
                                 "/api/reviews/product/**",
                                 "/api/reviews/product/{productId}/average-rating",
-                                "/api/reviews/product/{productId}/total-reviews"
+                                "/api/reviews/product/{productId}/total-reviews",
                                 "/api/verify/resend-otp",
                                 "/api/payment/create-stripe-session",
-                                "/api/webhook/stripe"
+                                "/api/webhook/stripe",
+                                "/api/upload/**",
+                                "/api/auctions/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
