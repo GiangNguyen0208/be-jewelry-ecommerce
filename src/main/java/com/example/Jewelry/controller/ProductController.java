@@ -38,6 +38,12 @@ public class ProductController {
         return this.productResource.fetchAllProduct();
     }
 
+    @GetMapping("/fetch-by-category/{categoryName}")
+    @Operation(summary = "Api to fetch all product by category")
+    public ResponseEntity<ProductResponseDTO> fetchAllProductByCategory(@PathVariable("categoryName") String categoryName) {
+        return this.productResource.fetchAllProductByCategory(categoryName);
+    }
+
     @GetMapping(value = "/{productImageName}", produces = "image/*")
     public void fetchProductImage(@PathVariable("productImageName") String productImageName, HttpServletResponse resp) {
         this.productResource.fetchProductImage(productImageName, resp);
