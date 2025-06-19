@@ -62,5 +62,8 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<DeliveryAddress> deliveryAddressList;
 
+    @OneToMany(mappedBy = "author", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private List<AuctionProduct> auctionProducts = new ArrayList<>();
 }
 

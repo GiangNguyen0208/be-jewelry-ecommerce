@@ -101,6 +101,8 @@ public class SecurityConfig {
                                 "/api/user/register",
                                 "/api/user/confirm",
                                 "/api/user/resend-confirmation",
+                                "/api/user/register-ctv",
+                                "/api/user/**",
                                 "/oauth2/**",
                                 "/api/product/list",
                                 "/api/product/{productId}",

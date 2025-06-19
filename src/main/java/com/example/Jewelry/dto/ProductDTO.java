@@ -1,6 +1,7 @@
 package com.example.Jewelry.dto;
 
 import com.example.Jewelry.dto.response.ImageDTO;
+import com.example.Jewelry.entity.AuctionProduct;
 import com.example.Jewelry.entity.Product;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
@@ -25,7 +26,6 @@ public class ProductDTO {
     private String description;
     private Double price;
     private String brand;
-    private List<MultipartFile> images;
     private String size;
     private String productMaterial;
     private String occasion;
@@ -35,11 +35,14 @@ public class ProductDTO {
     private String productIsBadge;
     private boolean deleted;
     private String status;
-
     private LocalDateTime createdAt;
     private LocalDateTime updateAt;
     private LocalDateTime deletedAt;
     private List<ImageDTO> imageURLs;
+    private List<MultipartFile> images;
+
+    // Auction Product
+    private AuctionProductDTO auctionProductDTO;
 
     // Category
     private int categoryId;

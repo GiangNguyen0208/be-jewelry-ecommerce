@@ -6,9 +6,11 @@ import com.example.Jewelry.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+@Repository
 public interface ProductDAO extends JpaRepository<Product, Integer> {
 
     List<Product> findByCategoryAndStatusOrderByIdDesc(Category category, String status);

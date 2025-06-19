@@ -3,20 +3,15 @@ package com.example.Jewelry.resource;
 import com.example.Jewelry.Utility.Constant;
 import com.example.Jewelry.dao.CategoryDAO;
 import com.example.Jewelry.dao.ProductDAO;
+import com.example.Jewelry.dto.AuctionProductDTO;
 import com.example.Jewelry.dto.ProductDTO;
 import com.example.Jewelry.dto.request.AddProductRequestDTO;
 import com.example.Jewelry.dto.response.CommonApiResponse;
 import com.example.Jewelry.dto.response.ImageDTO;
 import com.example.Jewelry.dto.response.ProductResponseDTO;
-import com.example.Jewelry.entity.Category;
-import com.example.Jewelry.entity.Image;
-import com.example.Jewelry.entity.Product;
-import com.example.Jewelry.entity.User;
+import com.example.Jewelry.entity.*;
 import com.example.Jewelry.exception.CategorySaveFailedException;
-import com.example.Jewelry.service.CategoryService;
-import com.example.Jewelry.service.ProductService;
-import com.example.Jewelry.service.StorageService;
-import com.example.Jewelry.service.UserService;
+import com.example.Jewelry.service.*;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
@@ -65,6 +60,9 @@ public class ProductResource {
     @Autowired
     private CategoryDAO categoryDAO;
 
+    @Autowired
+    private AuctionProductService auctionProductService;
+
     public ResponseEntity<ProductResponseDTO> addProduct(AddProductRequestDTO request) {
 
         LOG.info("received request for adding the product");
@@ -91,14 +89,6 @@ public class ProductResource {
 
         if (category == null) {
             response.setResponseMessage("category not found");
-            response.setSuccess(false);
-            return new ResponseEntity<ProductResponseDTO>(response, HttpStatus.BAD_REQUEST);
-        }
-
-        User ctvOrAdmin = this.userService.getUserById(request.getCtvOrAdminId());
-
-        if (ctvOrAdmin == null) {
-            response.setResponseMessage("admin not found");
             response.setSuccess(false);
             return new ResponseEntity<ProductResponseDTO>(response, HttpStatus.BAD_REQUEST);
         }
@@ -202,13 +192,28 @@ public class ProductResource {
             }
         }
 
+        AuctionProductDTO auctionProductDTO = null;
+        if (product.getAuctionProduct() != null) {
+            AuctionProduct auction = product.getAuctionProduct();
+            auctionProductDTO = AuctionProductDTO.builder()
+                    .auctionEndTime(auction.getAuctionEndTime())
+                    .budgetAuction(auction.getBudgetAuction())
+                    .quantity(auction.getQuantity())
+                    .status(auction.getStatus())
+                    .author_id(auction.getAuthor() != null ? auction.getAuthor().getId() : 0)
+                    .collaboration_id(auction.getCtv() != null ? auction.getCtv().getId() : 0)
+                    .build();
+        }
+
+        LOG.info("product.getAuctionProduct(): " + auctionProductDTO.toString());
+
         return ProductDTO.builder()
                 .id(product.getId())
                 .name(product.getName())
                 .description(product.getDescription())
                 .price(product.getPrice())
                 .brand(product.getBrand())
-                .imageURLs(imageDTOs) // sử dụng DTO ảnh
+                .imageURLs(imageDTOs)
                 .size(product.getSize())
                 .productMaterial(product.getProductMaterial())
                 .occasion(product.getOccasion())
@@ -225,9 +230,9 @@ public class ProductResource {
                 .categoryName(product.getCategory() != null ? product.getCategory().getName() : null)
                 .averageRating(0.0)
                 .totalRating(0)
+                .auctionProductDTO(auctionProductDTO)
                 .build();
     }
-
 
     public void fetchProductImage(String productImageName, HttpServletResponse resp) {
         Resource resource = storageService.loadProductImage(productImageName);
@@ -455,18 +460,18 @@ public class ProductResource {
             return new ResponseEntity<ProductResponseDTO>(response, HttpStatus.BAD_REQUEST);
         }
 
-        User ctvOrAdmin = this.userService.getUserById(request.getCtvOrAdminId());
+        User authorAdd = this.userService.getUserById(request.getUserAddID());
 
-        if (ctvOrAdmin == null) {
-            response.setResponseMessage("User not found");
+        if (authorAdd == null) {
+            response.setResponseMessage("user not found");
             response.setSuccess(false);
             return new ResponseEntity<ProductResponseDTO>(response, HttpStatus.BAD_REQUEST);
         }
 
         Product product = AddProductRequestDTO.toEntity(request);
-        product.setProductIsBadge(request.getProductIsBadge());
         product.setDeleted(false);
         product.setCategory(category);
+        product.setPrice(request.getBudgetAuction() / request.getQuantity());
         product.setStatus(Constant.ActiveStatus.OPENAUCTION.value());
 
         // Upload ảnh và gán vào danh sách
@@ -491,17 +496,27 @@ public class ProductResource {
         }
 
         product.setImages(images);
+        Product savedProduct = this.productService.add(product);
 
-        Product saveProduct = this.productService.add(product);
+        // Create Auction Product
+        AuctionProduct auctionProduct = new AuctionProduct();
+        auctionProduct.setProduct(product);
+        auctionProduct.setBudgetAuction(request.getBudgetAuction());
+        auctionProduct.setAuthor(authorAdd);
+        auctionProduct.setQuantity(request.getQuantity());
+        auctionProduct.setAuctionEndTime(LocalDateTime.now().plusDays(7));
+        auctionProduct.setStatus(Constant.ActiveStatus.OPENAUCTION.value());
 
-        if (saveProduct == null) {
-            response.setResponseMessage("Failed to add the course");
+        auctionProductService.add(auctionProduct);
+
+        if (savedProduct == null) {
+            response.setResponseMessage("Failed to add the auction Product");
             response.setSuccess(false);
 
             return new ResponseEntity<ProductResponseDTO>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         } else {
-            response.setProduct(saveProduct);
-            response.setResponseMessage("Product Created Successful, Add now....");
+            response.setProduct(savedProduct);
+            response.setResponseMessage("Auction product Created Successful, Add now....");
             response.setSuccess(true);
 
             return new ResponseEntity<ProductResponseDTO>(response, HttpStatus.OK);
@@ -509,7 +524,8 @@ public class ProductResource {
     }
 
     public ResponseEntity<ProductResponseDTO> fetchAllProductAuction() {
-        List<Product> products = productService.fetchAllProductOpenAuction(Constant.ActiveStatus.OPENAUCTION.value())
+        List<Product> products = productService
+                .fetchAllProductOpenAuction(Constant.ActiveStatus.OPENAUCTION.value())
                 .stream()
                 .filter(product -> !product.isDeleted())
                 .toList();
