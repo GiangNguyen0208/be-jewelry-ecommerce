@@ -30,26 +30,28 @@ public class AddProductRequestDTO {
     private String color;
     private String occasion;
     private Double prevPrice;
+    private Double budgetAuction;
     private String productIsBadge;
     private String status;
+    private int quantity;
     private LocalDateTime createdAt;
     private LocalDateTime updateAt;
     private LocalDateTime deletedAt;
+    private LocalDateTime auctionEndAt;
     // Category
     private int categoryId;
     // CTV and Admin add
-    private int ctvOrAdminId;
+    private int userAddID;
 
     public static Product toEntity(AddProductRequestDTO dto) {
         Product product = new Product();
-        BeanUtils.copyProperties(dto, product, "id", "ctvOrAdminId", "categoryId");
+        BeanUtils.copyProperties(dto, product, "id", "userAddID", "categoryId");
         return product;
     }
 
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
-        this.updateAt = LocalDateTime.now();
     }
 
     @PreUpdate

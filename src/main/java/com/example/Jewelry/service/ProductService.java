@@ -33,4 +33,6 @@ public interface ProductService {
     ProductDTO getProductDetailsForUser(int id);
 
     List<Product> getByCategoryNameAndStatus(String categoryName, String status);
+
+    List<Product> fetchAllProductOpenAuction(String status);
 }

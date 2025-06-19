@@ -164,4 +164,9 @@ public class ProductServiceImpl implements ProductService {
         return productDAO.getByCategoryNameAndStatus(categoryName, status);
     }
 
+    @Override
+    public List<Product> fetchAllProductOpenAuction(String status) {
+        return productDAO.findAllByStatusOpenAuction(status);
+    }
+
 }
