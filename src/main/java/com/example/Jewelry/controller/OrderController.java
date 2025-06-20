@@ -166,4 +166,12 @@ public class OrderController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Đã có lỗi xảy ra khi xử lý yêu cầu của bạn.");
         }
     }
+    @GetMapping("/status/{orderId}")
+    public ResponseEntity<CommonAPIResForOrder> getOrderStatus(@PathVariable Integer orderId) {
+        CommonAPIResForOrder response = orderService.getOrderStatus(orderId);
+        return ResponseEntity.ok(response);
+    }
+
+
+
 }
