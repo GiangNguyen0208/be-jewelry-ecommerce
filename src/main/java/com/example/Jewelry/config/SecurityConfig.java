@@ -20,6 +20,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.List;
 
@@ -68,7 +70,14 @@ public class SecurityConfig {
                                 "/api/user/register",
                                 "/api/user/confirm",
                                 "/api/user/resend-confirmation",
+                                "/api/user/register-ctv",
+                                "/api/user/**",
                                 "/oauth2/**",
+                                "/api/product/list",
+                                "/api/product/{productId}",
+                                "/api/product/**",
+                                "/api/reverse-auction/**",
+                                "/reviews/product/**",
                                 "/api/wishlist/**",
                                 "/api/cart/**",
                                 "/api/product/**",

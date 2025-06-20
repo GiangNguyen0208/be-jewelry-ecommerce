@@ -143,4 +143,14 @@ public class ProductServiceImpl implements ProductService {
                 .build();
     }
 
+    @Override
+    public List<Product> getByCategoryNameAndStatus(String categoryName, String status) {
+        return productDAO.getByCategoryNameAndStatus(categoryName, status);
+    }
+
+    @Override
+    public List<Product> fetchAllProductOpenAuction(String status) {
+        return productDAO.findAllByStatusOpenAuction(status);
+    }
+
 }

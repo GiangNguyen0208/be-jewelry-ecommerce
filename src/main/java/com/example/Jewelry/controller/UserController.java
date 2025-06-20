@@ -17,6 +17,8 @@ import com.example.Jewelry.resource.UserResource;
 import com.example.Jewelry.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,6 +34,8 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/user")
 @CrossOrigin(origins = "http://localhost:3000")
 public class UserController {
+
+    private final Logger LOG = LoggerFactory.getLogger(UserResource.class);
     @Autowired
     UserResource userResource;
 
@@ -44,6 +48,7 @@ public class UserController {
     @PostMapping("/login")
     @Operation(summary = "Api to login any User")
     public ResponseEntity<UserLoginResponse> login(@RequestBody UserLoginRequest userLoginRequest) {
+        LOG.info("Received request for User Login " + userLoginRequest.toString());
         return userResource.login(userLoginRequest);
     }
 
@@ -55,6 +60,11 @@ public class UserController {
     @GetMapping(path = "/confirm")
     public ResponseEntity<CommonApiResponse> confirm(@RequestParam("token") String token) {
         return userResource.confirmToken(token);
+    }
+
+    @GetMapping(path = "/{userId}")
+    public ResponseEntity<UserDTO> getUserById(@PathVariable("userId") int userId) {
+        return userResource.getUserById(userId);
     }
 
     @GetMapping(path = "/resend-confirmation")

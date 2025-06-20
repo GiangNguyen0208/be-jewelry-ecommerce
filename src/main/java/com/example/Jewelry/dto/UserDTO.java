@@ -15,7 +15,7 @@ public class UserDTO {
 
     private int id;
     private String gender;
-    private String firebaseUid;
+    private String username;
     private String firstName;
     private String lastName;
     private String emailId;

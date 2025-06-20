@@ -6,6 +6,8 @@ target/
 
 # .gitignore
 .env
+!**/src/main/resources/
+
 
 ### STS ###
 .apt_generated

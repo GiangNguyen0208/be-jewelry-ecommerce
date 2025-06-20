@@ -1,0 +1,49 @@
+package com.example.Jewelry.controller;
+
+import com.example.Jewelry.dto.request.AddProductRequestDTO;
+import com.example.Jewelry.dto.response.ProductResponseDTO;
+import com.example.Jewelry.resource.ProductResource;
+import com.example.Jewelry.resource.UserResource;
+import com.example.Jewelry.service.CategoryService;
+import com.example.Jewelry.service.ProductService;
+import com.example.Jewelry.service.StorageService;
+import io.swagger.v3.oas.annotations.Operation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/reverse-auction")
+public class ReverseAuctionController {
+
+    private final Logger LOG = LoggerFactory.getLogger(UserResource.class);
+
+    @Autowired
+    private ProductResource productResource;
+
+    @Autowired
+    private ProductService productService;
+
+    @Autowired
+    private CategoryService categoryService;
+
+    @Autowired
+    private StorageService storageService;
+
+    @PostMapping("/add")
+    @Operation(summary = "Api to add the Product Auction")
+    public ResponseEntity<ProductResponseDTO> createProductAuction(@ModelAttribute AddProductRequestDTO request) {
+        LOG.info("received request for adding the product Auction, " + request.toString());
+        return productResource.createProductAuction(request);
+    }
+
+    @GetMapping("/fetch-all")
+    @Operation(summary = "Api to fetch all product Auction")
+    public ResponseEntity<ProductResponseDTO> fetchAllProductAuction() {
+        return this.productResource.fetchAllProductAuction();
+    }
+
+}
