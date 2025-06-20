@@ -1,5 +1,6 @@
 package com.example.Jewelry.entity;
 
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 @Data
 @Entity
@@ -25,8 +27,7 @@ public class Product {
     @Column(columnDefinition = "LONGTEXT")
     private String description;
 
-    /** Product Pricing */
-    @Column(nullable = false)
+    @Column(name = "price", nullable = false)
     private Double price;
 
     /** Product Category it belongs too */
@@ -68,7 +69,9 @@ public class Product {
     @Column(name = "product_is_badge")
     private String productIsBadge;
 
-    /** Đã xóa */
+    @OneToMany(mappedBy = "productId", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Set<Review> reviews;
+
     private boolean deleted;
 
     private String status;

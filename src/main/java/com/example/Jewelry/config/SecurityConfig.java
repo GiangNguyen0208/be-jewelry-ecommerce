@@ -23,6 +23,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import java.util.List;
+
 
 @Configuration
 @EnableWebSecurity
@@ -50,50 +52,17 @@ public class SecurityConfig {
         return new CustomUserDetailsService();
     }
 
-//    @Bean
-//    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-//
-//        http.csrf(csrf -> csrf.disable())
-//                .cors(cors -> cors.disable())
-//
-//                .authorizeHttpRequests(auth -> auth.requestMatchers("/api/user/login", "/api/user/register", "/api/user/confirm", "/api/user/resend-confirmation").permitAll()
-//
-////						// this APIs are only accessible by ADMIN
-//                        .requestMatchers("/api/user/admin/register", "/api/user/delete/seller", "/api/order/fetch/all",
-//                                "/api/category/update", "/api/category/add", "/api/category/delete",
-//                                "/api/user/fetch/role-wise", "/api/user/update/status")
-//                        .hasAuthority(Constant.UserRole.ROLE_ADMIN.value())
-////
-////						// this APIs are only accessible by SELLER
-//                        .requestMatchers("/api/user/fetch/seller/delivery-person", "/api/user/delete/seller/delivery-person", "/api/product/update/image",
-//                                "/api/product/update/detail", "/api/product/add", "/api/product/delete",
-//                                "/api/order/assign/delivery-person", "/api/order/fetch/seller-wise",
-//                                "/api/product/review/seller")
-//                        .hasAuthority(Constant.UserRole.ROLE_CTV.value())
-////
-////						// this APIs are only accessible by SELLER
-//                        .requestMatchers("/api/order/add", "/api/order/fetch/user-wise", "/api/cart/update",
-//                                "/api/cart/add", "/api/cart/fetch", "/api/cart/delete", "/api/product/review/add")
-//                        .hasAuthority(Constant.UserRole.ROLE_USER.value())
-////
-////						// this APIs are only accessible by ADMIN & SELLER
-//                        .requestMatchers("/api/user/fetch/role-wise", "/api/user/update/status")
-//                        .hasAnyAuthority(Constant.UserRole.ROLE_ADMIN.value())
-//
-//                        .anyRequest().permitAll())
-//
-//                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-//
-//        http.addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class);
-//
-//        return http.build();
-//
-//    }
-
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                .cors(cors -> cors.configurationSource(request -> {
+                    CorsConfiguration config = new CorsConfiguration();
+                    config.setAllowedOrigins(List.of("http://localhost:3000"));
+                    config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
+                    config.setAllowedHeaders(List.of("*"));
+                    config.setAllowCredentials(true);
+                    return config;
+                }))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
@@ -109,8 +78,25 @@ public class SecurityConfig {
                                 "/api/product/**",
                                 "/api/reverse-auction/**",
                                 "/reviews/product/**",
+                                "/api/wishlist/**",
+                                "/api/cart/**",
+                                "/api/product/**",
+                                "/api/delivery/fetch-user/**",
+                                "/api/delivery/add",
+                                "/api/orders/create",
+                                "/api/orders/**",
+                                "/api/verify/verify-otp",
+                                "/api/verify/resend-otp",
+                                "/api/product/list",
+                                "/api/product/{productId}",
+                                "/api/reviews/product/**",
                                 "/api/reviews/product/{productId}/average-rating",
-                                "/api/reviews/product/{productId}/total-reviews"
+                                "/api/reviews/product/{productId}/total-reviews",
+                                "/api/verify/resend-otp",
+                                "/api/payment/create-stripe-session",
+                                "/api/webhook/stripe",
+                                "/api/upload/**",
+                                "/api/auctions/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
@@ -132,7 +118,6 @@ public class SecurityConfig {
         return http.build();
     }
 
-
     @Bean
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
@@ -145,20 +130,6 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
-//    @Bean
-//    public WebMvcConfigurer corsConfigurer() {
-//        return new WebMvcConfigurer() {
-//            @Override
-//            public void addCorsMappings(CorsRegistry registry) {
-//                registry.addMapping("/**")
-//                        .allowedOrigins("http://localhost:3000")  // Đảm bảo cho phép frontend FE
-//                        .allowedMethods("GET", "POST", "PUT", "DELETE")
-//                        .allowedHeaders("*")
-//                        .allowCredentials(true);
-//            }
-//        };
-//    }
-
 
 }
 

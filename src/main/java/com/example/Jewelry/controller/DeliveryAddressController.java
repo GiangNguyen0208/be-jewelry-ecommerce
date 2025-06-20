@@ -53,6 +53,11 @@ public class DeliveryAddressController {
         }
 
         List<DeliveryAddress> addresses = deliveryAddressService.getByUserID(userID);
+        if (addresses == null) {
+            response.setSuccess(false);
+            response.setResponseMessage("User not have any delivery address.");
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
         List<DeliveryAddressDTO> result = addresses.stream().map((addr) -> DeliveryAddressDTO.convertDeliveryAddress(addr)).toList();
         response.setSuccess(true);
         response.setResponseMessage("Lấy sổ địa chỉ thành công!");

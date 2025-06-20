@@ -6,6 +6,7 @@ import com.example.Jewelry.dto.response.ImageDTO;
 import com.example.Jewelry.entity.Category;
 import com.example.Jewelry.entity.Product;
 import com.example.Jewelry.service.ProductService;
+import com.example.Jewelry.service.ReviewService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +18,9 @@ import java.util.stream.Collectors;
 public class ProductServiceImpl implements ProductService {
     @Autowired
     private ProductDAO productDAO;
+
+    @Autowired
+    private ReviewService reviewService;
 
     @Override
     public Product add(Product product) {
@@ -97,11 +101,17 @@ public class ProductServiceImpl implements ProductService {
                         .name(product.getName())
                         .price(product.getPrice())
                         .prevPrice(product.getPrevPrice())
+                        .description(product.getDescription())
+                        .brand(product.getBrand())
+                        .productMaterial(product.getProductMaterial())
+                        .occasion(product.getOccasion())
+                        .productIsBadge(product.getProductIsBadge())
+                        .status(product.getStatus())
                         .imageURLs(product.getImages().stream()
                                 .map(img -> new ImageDTO(img.getId(), img.getUrl()))
                                 .collect(Collectors.toList()))
-                        .averageRating(2)  //rating tam thoi
-                        .totalRating(2)
+                        .averageRating(reviewService.getAverageRatingForProduct(product.getId()))
+                        .totalRating(reviewService.getTotalReviewsForProduct(product.getId()))
                         .categoryName(product.getCategory() != null ? product.getCategory().getName() : null)
                         .build())
                 .toList();
@@ -117,14 +127,19 @@ public class ProductServiceImpl implements ProductService {
         return ProductDTO.builder()
                 .id(product.getId())
                 .name(product.getName())
-                .price(product.getPrice())
+                .description(product.getDescription())
+                .brand(product.getBrand())
+                .productMaterial(product.getProductMaterial())
+                .occasion(product.getOccasion())
                 .prevPrice(product.getPrevPrice())
+                .price(product.getPrice())
+                .productIsBadge(product.getProductIsBadge())
                 .imageURLs(product.getImages().stream()
                         .map(img -> new ImageDTO(img.getId(), img.getUrl()))
                         .collect(Collectors.toList()))
-                .averageRating(0) // sẽ thay sau nếu có
-                .totalRating(0)
                 .categoryName(product.getCategory() != null ? product.getCategory().getName() : null)
+                .averageRating(reviewService.getAverageRatingForProduct(product.getId()))
+                .totalRating(reviewService.getTotalReviewsForProduct(product.getId()))
                 .build();
     }
 

@@ -11,11 +11,17 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
+
 @Service
 @AllArgsConstructor
 public class EmailServiceImpl implements EmailService {
     private final JavaMailSender mail;
     private final static Logger LOG = LoggerFactory.getLogger(EmailServiceImpl.class);
+    private final Map<String, String> otpStorage = new HashMap<>();
 
     @Override
     @Async
@@ -47,7 +53,7 @@ public class EmailServiceImpl implements EmailService {
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "utf-8");
             helper.setText("Mã xác thực thanh toán của bạn là: <b>" + otp + "</b>", true);
             helper.setTo(email);
-            helper.setSubject("Xác nhận thanh toán khóa học");
+            helper.setSubject("Xác Nhận Mã OTP Đơn Hàng");
             helper.setFrom("demo.admin@demo.com");
             mail.send(mimeMessage);
         } catch (MessagingException e) {
@@ -56,4 +62,18 @@ public class EmailServiceImpl implements EmailService {
         }
     }
 
+    public String generateOtp(String email) {
+        String otp = String.format("%06d", new Random().nextInt(999999));
+        otpStorage.put(email, otp);
+        sendOtpEmail(email, otp);
+        return otp;
+    }
+
+    public boolean verifyOtp(String email, String inputOtp) {
+        return otpStorage.containsKey(email) && otpStorage.get(email).equals(inputOtp);
+    }
+
+    public void clearOtp(String email) {
+        otpStorage.remove(email);
+    }
 }

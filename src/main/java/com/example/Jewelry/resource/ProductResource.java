@@ -3,7 +3,6 @@ package com.example.Jewelry.resource;
 import com.example.Jewelry.Utility.Constant;
 import com.example.Jewelry.dao.CategoryDAO;
 import com.example.Jewelry.dao.ProductDAO;
-import com.example.Jewelry.dto.AuctionProductDTO;
 import com.example.Jewelry.dto.ProductDTO;
 import com.example.Jewelry.dto.request.AddProductRequestDTO;
 import com.example.Jewelry.dto.response.CommonApiResponse;
@@ -93,6 +92,14 @@ public class ProductResource {
             return new ResponseEntity<ProductResponseDTO>(response, HttpStatus.BAD_REQUEST);
         }
 
+        User ctvOrAdmin = this.userService.getUserById(request.getUserAddID());
+
+        if (ctvOrAdmin == null) {
+            response.setResponseMessage("admin not found");
+            response.setSuccess(false);
+            return new ResponseEntity<ProductResponseDTO>(response, HttpStatus.BAD_REQUEST);
+        }
+
         Product product = AddProductRequestDTO.toEntity(request);
         product.setProductIsBadge(request.getProductIsBadge());
         product.setDeleted(false);
@@ -131,40 +138,11 @@ public class ProductResource {
             return new ResponseEntity<ProductResponseDTO>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         } else {
             response.setProduct(saveProduct);
-            response.setResponseMessage("Product Created Successful, Add now....");
+            response.setResponseMessage("Course Created Successful, Add Course Section now....");
             response.setSuccess(true);
 
             return new ResponseEntity<ProductResponseDTO>(response, HttpStatus.OK);
         }
-    }
-
-    public ResponseEntity<ProductResponseDTO> fetchAllProductByCategory(String categoryName) {
-        ProductResponseDTO response = new ProductResponseDTO();
-        if (categoryName == null) {
-            response.setProducts(null);
-            response.setResponseMessage("Category Name null");
-            response.setSuccess(false);
-
-            return new ResponseEntity<ProductResponseDTO>(response, HttpStatus.BAD_REQUEST);
-        }
-
-        boolean categoryExists = categoryService.existsByName(categoryName);
-
-        if (!categoryExists) {
-            response.setProducts(null);
-            response.setResponseMessage("Category ID Not Found");
-            response.setSuccess(false);
-
-            return new ResponseEntity<ProductResponseDTO>(response, HttpStatus.NOT_FOUND);
-        }
-
-        List<Product> products = this.productService.getByCategoryNameAndStatus(categoryName, Constant.ActiveStatus.ACTIVE.value());
-
-        response.setProducts(products);
-        response.setResponseMessage("Fetch Product List By Category ID Successfully !");
-        response.setSuccess(false);
-
-        return new ResponseEntity<ProductResponseDTO>(response, HttpStatus.OK);
     }
 
     public ResponseEntity<ProductResponseDTO> fetchAllProduct() {
@@ -192,28 +170,13 @@ public class ProductResource {
             }
         }
 
-        AuctionProductDTO auctionProductDTO = null;
-        if (product.getAuctionProduct() != null) {
-            AuctionProduct auction = product.getAuctionProduct();
-            auctionProductDTO = AuctionProductDTO.builder()
-                    .auctionEndTime(auction.getAuctionEndTime())
-                    .budgetAuction(auction.getBudgetAuction())
-                    .quantity(auction.getQuantity())
-                    .status(auction.getStatus())
-                    .author_id(auction.getAuthor() != null ? auction.getAuthor().getId() : 0)
-                    .collaboration_id(auction.getCtv() != null ? auction.getCtv().getId() : 0)
-                    .build();
-        }
-
-        LOG.info("product.getAuctionProduct(): " + auctionProductDTO.toString());
-
         return ProductDTO.builder()
                 .id(product.getId())
                 .name(product.getName())
                 .description(product.getDescription())
                 .price(product.getPrice())
                 .brand(product.getBrand())
-                .imageURLs(imageDTOs)
+                .imageURLs(imageDTOs) // sử dụng DTO ảnh
                 .size(product.getSize())
                 .productMaterial(product.getProductMaterial())
                 .occasion(product.getOccasion())
@@ -230,9 +193,9 @@ public class ProductResource {
                 .categoryName(product.getCategory() != null ? product.getCategory().getName() : null)
                 .averageRating(0.0)
                 .totalRating(0)
-                .auctionProductDTO(auctionProductDTO)
                 .build();
     }
+
 
     public void fetchProductImage(String productImageName, HttpServletResponse resp) {
         Resource resource = storageService.loadProductImage(productImageName);
@@ -540,5 +503,59 @@ public class ProductResource {
 
         return ResponseEntity.ok(responseDTO);
 
+    }
+
+    public ResponseEntity<ProductResponseDTO> getActiveProductList() {
+        List<ProductDTO> productDTOList = productService.getActiveProductListForShop();
+        ProductResponseDTO responseDTO = new ProductResponseDTO();
+        responseDTO.setProductDTOs(productDTOList);
+        responseDTO.setSuccess(true);
+        responseDTO.setResponseMessage("Lấy danh sách sản phẩm trong shop thành công");
+        return ResponseEntity.ok(responseDTO);
+    }
+
+    public ResponseEntity<ProductResponseDTO> getProductById(int product_id) {
+        ProductResponseDTO responseDTO = new ProductResponseDTO();
+        Product product =  productService.getById(product_id);
+        if (product == null) {
+            responseDTO.setSuccess(false);
+            responseDTO.setResponseMessage("Không tìm thấy sản phẩm mã " + product_id);
+            return new ResponseEntity<>(responseDTO, HttpStatus.NOT_FOUND);
+        }
+
+        ProductDTO productDTO = convertToDTO(product);
+        responseDTO.setProductDTO(productDTO);
+        responseDTO.setSuccess(true);
+        responseDTO.setResponseMessage("Lấy danh sách sản phẩm trong shop thành công");
+        return ResponseEntity.ok(responseDTO);
+    }
+
+    public ResponseEntity<ProductResponseDTO> fetchAllProductByCategory(String categoryName) {
+        ProductResponseDTO response = new ProductResponseDTO();
+        if (categoryName == null) {
+            response.setProducts(null);
+            response.setResponseMessage("Category Name null");
+            response.setSuccess(false);
+
+            return new ResponseEntity<ProductResponseDTO>(response, HttpStatus.BAD_REQUEST);
+        }
+
+        boolean categoryExists = categoryService.existsByName(categoryName);
+
+        if (!categoryExists) {
+            response.setProducts(null);
+            response.setResponseMessage("Category ID Not Found");
+            response.setSuccess(false);
+
+            return new ResponseEntity<ProductResponseDTO>(response, HttpStatus.NOT_FOUND);
+        }
+
+        List<Product> products = this.productService.getByCategoryNameAndStatus(categoryName, Constant.ActiveStatus.ACTIVE.value());
+
+        response.setProducts(products);
+        response.setResponseMessage("Fetch Product List By Category ID Successfully !");
+        response.setSuccess(false);
+
+        return new ResponseEntity<ProductResponseDTO>(response, HttpStatus.OK);
     }
 }
