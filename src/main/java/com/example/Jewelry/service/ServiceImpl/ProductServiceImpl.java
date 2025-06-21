@@ -22,6 +22,7 @@ public class ProductServiceImpl implements ProductService {
     @Autowired
     private ReviewService reviewService;
 
+
     @Override
     public Product add(Product product) {
         // TODO Auto-generated method stub
@@ -168,5 +169,7 @@ public class ProductServiceImpl implements ProductService {
     public List<Product> fetchAllProductOpenAuction(String status) {
         return productDAO.findAllByStatusOpenAuction(status);
     }
+
+
 
 }

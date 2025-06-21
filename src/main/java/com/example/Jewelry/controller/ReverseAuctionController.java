@@ -46,4 +46,10 @@ public class ReverseAuctionController {
         return this.productResource.fetchAllProductAuction();
     }
 
+    @GetMapping("/fetch-all/my/{userID}")
+    @Operation(summary = "Api to fetch all product Auction By user")
+    public ResponseEntity<ProductResponseDTO> fetchAllMyProductAuction(@PathVariable("userID") int userID) {
+        return this.productResource.fetchAllMyProductAuction(userID);
+    }
+
 }
