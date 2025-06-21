@@ -15,7 +15,6 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Product {
-
     /** Product ID */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -83,5 +82,6 @@ public class Product {
 
     private LocalDateTime deletedAt;
 
-
+    @OneToOne(mappedBy = "product", cascade = CascadeType.ALL)
+    private AuctionProduct auctionProduct;
 }

@@ -16,7 +16,7 @@ public class Constant {
     }
 
     public enum ActiveStatus {
-        ACTIVE("Active"), DEACTIVATED("Deactivated"), DELETED("Deleted");
+        ACTIVE("Active"), DEACTIVATED("Deactivated"), DELETED("Deleted"), OPENAUCTION("Open-Auction");
 
         private String status;
 
@@ -43,12 +43,12 @@ public class Constant {
         }
     }
 
-    public enum CourseType {
+    public enum ProductType {
         NORMAL("Paid"), AUCTION("Auction");
 
         private String type;
 
-        private CourseType(String type) {
+        private ProductType(String type) {
             this.type = type;
         }
 

@@ -69,6 +69,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             System.out.println("[JwtAuthFilter] Token expired: " + ex.getMessage());
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.getWriter().write("Token expired");
+            filterChain.doFilter(request, response);  // Cho phép tiếp tục
+            return;
         } catch (Exception e) {
             System.out.println("[JwtAuthFilter] Token error: " + e.getMessage());
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -76,7 +78,41 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
     }
 
+//    Phương thức debug !!!
 
+//    @Override
+//    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+//            throws ServletException, IOException {
+//        System.out.println("[JwtAuthFilter] Request URI: " + request.getRequestURI());
+//
+//        String authHeader = request.getHeader("Authorization");
+//        String token = null;
+//        String username = null;
+//
+//        try {
+//            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+//                token = authHeader.substring(7);
+//                username = jwtUtils.extractUsername(token);  // Có thể throw ExpiredJwtException
+//                System.out.println("[JwtAuthFilter] Found token for user: " + username);
+//            }
+//
+//            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+//                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+//                if (jwtUtils.validateToken(token, userDetails)) {
+//                    UsernamePasswordAuthenticationToken authToken =
+//                            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+//                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+//                    SecurityContextHolder.getContext().setAuthentication(authToken);
+//                    System.out.println("[JwtAuthFilter] Authenticated user: " + username);
+//                }
+//            }
+//
+//        } catch (Exception e) {
+//            System.out.println("[JwtAuthFilter] Token error: " + e.getMessage());
+//        }
+//
+//        filterChain.doFilter(request, response);
+//    }
 
 }
 

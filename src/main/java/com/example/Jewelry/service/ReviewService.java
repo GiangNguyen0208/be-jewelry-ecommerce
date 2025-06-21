@@ -10,7 +10,7 @@ public interface ReviewService {
     List<ReviewResponse> getReviewsByProductId(int productId);
     ReviewResponse updateReview(int reviewId, ReviewRequest request, int userId);
     void deleteReview(int reviewId, int userId);
-    Double getAverageRatingForProduct(int productId);
+    double getAverageRatingForProduct(int productId);
     int getTotalReviewsForProduct(int productId);
     ReviewResponse incrementHelpfulCount(int reviewId);
 }
