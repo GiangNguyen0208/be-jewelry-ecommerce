@@ -6,9 +6,12 @@ import com.example.Jewelry.dao.ProductDAO;
 import com.example.Jewelry.dto.AuctionProductDTO;
 import com.example.Jewelry.dto.ProductDTO;
 import com.example.Jewelry.dto.request.AddProductRequestDTO;
+import com.example.Jewelry.dto.request.ReverseAuctionRequestDTO;
 import com.example.Jewelry.dto.response.CommonApiResponse;
 import com.example.Jewelry.dto.response.ImageDTO;
 import com.example.Jewelry.dto.response.ProductResponseDTO;
+import com.example.Jewelry.dto.response.ReverseAuctionResponseDTO;
+import com.example.Jewelry.dto.response.ReverseAuctionResponseDTO.AuctionRoomDTO;
 import com.example.Jewelry.entity.*;
 import com.example.Jewelry.exception.CategorySaveFailedException;
 import com.example.Jewelry.service.*;
@@ -21,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.FileCopyUtils;
@@ -33,6 +37,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Component
 @Transactional
@@ -77,10 +82,10 @@ public class ProductResource {
 
         if (request.getCategoryId() == 0 || request.getDescription() == null
                 || request.getName() == null) {
-                    
-            response.setResponseMessage("missing input " + Boolean.toString(request.getCategoryId() == 0) 
-            + "::" + Boolean.toString(request.getDescription() == null)
-             + "::" + Boolean.toString(request.getName() == null));
+
+            response.setResponseMessage("missing input " + Boolean.toString(request.getCategoryId() == 0)
+                    + "::" + Boolean.toString(request.getDescription() == null)
+                    + "::" + Boolean.toString(request.getName() == null));
             response.setSuccess(false);
             return new ResponseEntity<ProductResponseDTO>(response, HttpStatus.BAD_REQUEST);
         }
@@ -158,11 +163,12 @@ public class ProductResource {
 
         ProductResponseDTO responseDTO = new ProductResponseDTO();
         responseDTO.setProductDTOs(productDTOs);
-//        responseDTO.setProducts(products);
+        // responseDTO.setProducts(products);
         responseDTO.setResponseMessage("Fetched all products successfully");
 
         return ResponseEntity.ok(responseDTO);
     }
+
     private ProductDTO convertToDTO(Product product) {
         List<ImageDTO> imageDTOs = new ArrayList<>();
         if (product.getImages() != null) {
@@ -211,7 +217,6 @@ public class ProductResource {
                 .build();
     }
 
-
     public void fetchProductImage(String productImageName, HttpServletResponse resp) {
         Resource resource = storageService.loadProductImage(productImageName);
         if (resource == null) {
@@ -227,7 +232,7 @@ public class ProductResource {
         resp.setContentType(mimeType);
 
         try (InputStream in = resource.getInputStream();
-             ServletOutputStream out = resp.getOutputStream()) {
+                ServletOutputStream out = resp.getOutputStream()) {
             FileCopyUtils.copy(in, out);
         } catch (IOException e) {
             e.printStackTrace();
@@ -235,44 +240,44 @@ public class ProductResource {
     }
 
     public ResponseEntity<CommonApiResponse> reStoreProduct(int productId) {
-            LOG.info("Request received to restock product with ID: {}", productId);
+        LOG.info("Request received to restock product with ID: {}", productId);
 
-            CommonApiResponse response = new CommonApiResponse();
+        CommonApiResponse response = new CommonApiResponse();
 
-            if (productId == 0) {
-                response.setResponseMessage("Missing Product ID");
-                response.setSuccess(false);
-                return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-            }
+        if (productId == 0) {
+            response.setResponseMessage("Missing Product ID");
+            response.setSuccess(false);
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
 
-            Product product = productService.getById(productId);
+        Product product = productService.getById(productId);
 
-            if (product == null) {
-                response.setResponseMessage("Product not found");
-                response.setSuccess(false);
-                return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-            }
+        if (product == null) {
+            response.setResponseMessage("Product not found");
+            response.setSuccess(false);
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        }
 
-            if (!product.isDeleted()) {
-                response.setResponseMessage("Product is already active");
-                response.setSuccess(false);
-                return new ResponseEntity<>(response, HttpStatus.CONFLICT);
-            }
+        if (!product.isDeleted()) {
+            response.setResponseMessage("Product is already active");
+            response.setSuccess(false);
+            return new ResponseEntity<>(response, HttpStatus.CONFLICT);
+        }
 
-            product.setStatus(Constant.ActiveStatus.ACTIVE.value());
-            product.setDeleted(false);
-            product.setDeletedAt(null);
-            product.setUpdateAt(LocalDateTime.now());
+        product.setStatus(Constant.ActiveStatus.ACTIVE.value());
+        product.setDeleted(false);
+        product.setDeletedAt(null);
+        product.setUpdateAt(LocalDateTime.now());
 
-            Product updatedProduct = productService.update(product);
+        Product updatedProduct = productService.update(product);
 
-            if (updatedProduct == null) {
-                throw new CategorySaveFailedException("Failed to restock the Product");
-            }
+        if (updatedProduct == null) {
+            throw new CategorySaveFailedException("Failed to restock the Product");
+        }
 
-            response.setResponseMessage("Product restocked successfully");
-            response.setSuccess(true);
-            return new ResponseEntity<>(response, HttpStatus.OK);
+        response.setResponseMessage("Product restocked successfully");
+        response.setSuccess(true);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     public ResponseEntity<CommonApiResponse> deleteProduct(int productId) {
@@ -376,7 +381,8 @@ public class ProductResource {
         existingProduct.setCategory(changeCategory);
 
         // Upload ảnh và gán vào danh sách
-        List<Image> images = existingProduct.getImages() != null ? new ArrayList<>(existingProduct.getImages()) : new ArrayList<>();
+        List<Image> images = existingProduct.getImages() != null ? new ArrayList<>(existingProduct.getImages())
+                : new ArrayList<>();
 
         if (request.getImages() != null) {
             for (MultipartFile imageFile : request.getImages()) {
@@ -407,7 +413,6 @@ public class ProductResource {
         response.setSuccess(true);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
-
 
     public ResponseEntity<ProductResponseDTO> createProductAuction(AddProductRequestDTO request) {
         LOG.info("received request for adding the PRODUCT AUCTION");
@@ -531,7 +536,7 @@ public class ProductResource {
 
     public ResponseEntity<ProductResponseDTO> getProductById(int product_id) {
         ProductResponseDTO responseDTO = new ProductResponseDTO();
-        Product product =  productService.getById(product_id);
+        Product product = productService.getById(product_id);
         if (product == null) {
             responseDTO.setSuccess(false);
             responseDTO.setResponseMessage("Không tìm thấy sản phẩm mã " + product_id);
@@ -565,7 +570,8 @@ public class ProductResource {
             return new ResponseEntity<ProductResponseDTO>(response, HttpStatus.NOT_FOUND);
         }
 
-        List<Product> products = this.productService.getByCategoryNameAndStatus(categoryName, Constant.ActiveStatus.ACTIVE.value());
+        List<Product> products = this.productService.getByCategoryNameAndStatus(categoryName,
+                Constant.ActiveStatus.ACTIVE.value());
 
         response.setProducts(products);
         response.setResponseMessage("Fetch Product List By Category ID Successfully !");
@@ -591,4 +597,91 @@ public class ProductResource {
 
         return ResponseEntity.ok(responseDTO);
     }
+
+    /** CTV đăng kí phòng đấu giá */
+    public ResponseEntity<CommonApiResponse> createRegisterationForAuction(ReverseAuctionRequestDTO auctionRequestDTO) {
+        int ctvID = auctionRequestDTO.getCtvID();
+        CTV ctvUser = userService.getCTVByUserId(ctvID);
+        int auctionID = auctionRequestDTO.getAuctionID();
+
+        CommonApiResponse response;
+
+        if (ctvUser == null)
+            response = CommonApiResponse.fail(
+                    "Lỗi: Không tìm thấy người dùng hoặc người dùng với ID %d không phải là CTV".formatted(ctvID));
+        else if (!ctvUser.getStatus().equals(Constant.CtvStatus.APPROVED.value()))
+            response = CommonApiResponse.fail("Lỗi: Người dùng với ID %d chưa được chấp nhận là CTV".formatted(ctvID));
+        else {
+            AuctionProduct product = auctionProductService.getByProductId(auctionID);
+            if (product == null) {
+                response = CommonApiResponse.fail("Lỗi: Không tìm thấy auction với ID %d".formatted(auctionID));
+            } else {
+                if (!product.getStatus().equals(Constant.ActiveStatus.OPENAUCTION.value()))
+                    response = CommonApiResponse
+                            .fail("Lỗi: Auction với ID %d không còn hiệu lực hoặc đã xong rồi!".formatted(auctionID));
+                else {
+                    AuctionRoom room = new AuctionRoom();
+                    room.setAccepted(false);
+                    room.setCollaborator(ctvUser);
+                    room.setCurrentAuction(product);
+                    room.setProposingPrice(auctionRequestDTO.getProposedPrice());
+                    AuctionRoom yipee = auctionProductService.addRoom(room);
+                    response = CommonApiResponse.success("Tạo thành công phòng %s cho CTV %d của auction %d"
+                            .formatted(yipee.getId(), ctvUser.getId(), auctionID));
+                }
+
+            }
+        }
+
+        if (!response.isSuccess())
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        return ResponseEntity.ok(response);
+    }
+
+    public ResponseEntity<CommonApiResponse> responseAuctionRequest(String auctionRequestID, boolean accepted) {
+        CommonApiResponse response;
+        AuctionRoom auctionRoom = auctionProductService.getRoomByID(auctionRequestID);
+
+        if (auctionRoom == null)
+            response = CommonApiResponse.fail("Lỗi: Không tìm thấy phòng với ID %s".formatted(auctionRequestID));
+        else if (auctionRoom.getCurrentAuction() == null) {
+            response = CommonApiResponse
+                    .fail("Lỗi: Auction đi với phòng này không tồn tại??? %s".formatted(auctionRequestID));
+        } else if (!auctionRoom.getCurrentAuction().getStatus().equals(Constant.ActiveStatus.OPENAUCTION.value())) {
+            response = CommonApiResponse
+                    .fail("Lỗi: Yêu cầu %s không thể được phản hồi do không còn mở".formatted(auctionRequestID));
+        } else {
+            auctionRoom.setAccepted(accepted);
+            auctionProductService.addRoom(auctionRoom);
+            response = CommonApiResponse.success("Đã phản hồi");
+        }
+        if (!response.isSuccess())
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        return ResponseEntity.ok(response);
+    }
+
+    public ResponseEntity<ReverseAuctionResponseDTO> getAllAuctionChatRoomPerAuction(int userID, int auctionID) {
+        ReverseAuctionResponseDTO response = new ReverseAuctionResponseDTO();
+        User user = userService.getUserById(userID);
+        if (user == null) {
+            response.setSuccess(false);
+            response.setResponseMessage("Lỗi: Không có người dùng với ID đó");
+        } else {
+            List<AuctionRoom> auctionRooms = auctionProductService.getAuctionRoomsByAuctionID(auctionID);
+            if (auctionRooms == null) {
+                response.setSuccess(false);
+                response.setResponseMessage("Lỗi: Không có auction đó");
+            } else {
+                List<AuctionRoomDTO> auctionRoomsDTO = auctionRooms.stream().map(AuctionRoomDTO::fromEntity).toList();
+                response.setSuccess(true);
+                response.setResponseMessage("Oke");
+                response.setRoomList(auctionRoomsDTO);
+            }
+
+        }
+
+        return ResponseEntity.ok(response);
+    }
+
+    /** Owner xác nhận hoặc từ chối CTV :)) */
 }

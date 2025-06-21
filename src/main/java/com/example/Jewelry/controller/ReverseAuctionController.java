@@ -1,7 +1,10 @@
 package com.example.Jewelry.controller;
 
 import com.example.Jewelry.dto.request.AddProductRequestDTO;
+import com.example.Jewelry.dto.request.ReverseAuctionRequestDTO;
+import com.example.Jewelry.dto.response.CommonApiResponse;
 import com.example.Jewelry.dto.response.ProductResponseDTO;
+import com.example.Jewelry.dto.response.ReverseAuctionResponseDTO;
 import com.example.Jewelry.resource.ProductResource;
 import com.example.Jewelry.resource.UserResource;
 import com.example.Jewelry.service.CategoryService;
@@ -11,9 +14,14 @@ import io.swagger.v3.oas.annotations.Operation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+
 
 @RestController
 @RequestMapping("/api/reverse-auction")
@@ -43,7 +51,7 @@ public class ReverseAuctionController {
     @GetMapping("/fetch-all")
     @Operation(summary = "Api to fetch all product Auction")
     public ResponseEntity<ProductResponseDTO> fetchAllProductAuction() {
-        return this.productResource.fetchAllProductAuction();
+        return productResource.fetchAllProductAuction();
     }
 
     @GetMapping("/fetch-all/my/{userID}")
@@ -51,5 +59,26 @@ public class ReverseAuctionController {
     public ResponseEntity<ProductResponseDTO> fetchAllMyProductAuction(@PathVariable("userID") int userID) {
         return this.productResource.fetchAllMyProductAuction(userID);
     }
+
+    @PostMapping("/register")
+    public ResponseEntity<CommonApiResponse> createRegisterationForAuctionEntity(@RequestBody ReverseAuctionRequestDTO auctionRequestDTO) {       
+        return productResource.createRegisterationForAuction(auctionRequestDTO);
+    }
+
+    @PostMapping("/reply-auction-request/{auctionRequestID}")
+    public ResponseEntity<CommonApiResponse> responseToAuctionRequest(@PathVariable String auctionRequestID, @RequestBody String state) {
+        boolean accepted = state.equalsIgnoreCase("accepted");
+        return productResource.responseAuctionRequest(auctionRequestID, accepted);
+    }
+
+    @GetMapping("/fetch-room/my/{userID}")
+    public ResponseEntity<ReverseAuctionResponseDTO> getAvaliableRoomPerAuction(
+        @PathVariable("userID") int userID,
+        @RequestParam int auctionID
+    ) {
+        return productResource.getAllAuctionChatRoomPerAuction(userID, auctionID);
+    }
+    
+    
 
 }

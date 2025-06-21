@@ -36,58 +36,59 @@ public class ChatController {
     @Autowired
     private ProductDAO productDAO;
 
-    @MessageMapping("/chat.sendMessage")
-    public void sendMessage(@Payload ChatMessageDTO chatMessageDTO) {
-        // Validate sender, recipient, and product
-        User sender = userDAO.findById(chatMessageDTO.getSenderId())
-                .orElseThrow(() -> new IllegalArgumentException("Invalid sender ID"));
-        User recipient = userDAO.findById(chatMessageDTO.getRecipientId())
-                .orElseThrow(() -> new IllegalArgumentException("Invalid recipient ID"));
-        Product product = productDAO.findById(chatMessageDTO.getProductId())
-                .orElseThrow(() -> new IllegalArgumentException("Invalid product ID"));
+//     @MessageMapping("/sendMessage")
+//     public void sendMessage(@Payload ChatMessageDTO chatMessageDTO) {
+//         // Validate sender and product
 
-        // Save message to database
-        ChatMessage chatMessage = new ChatMessage();
-        chatMessage.setContent(chatMessageDTO.getContent());
-        chatMessage.setSender(sender);
-        chatMessage.setRecipient(recipient);
-        chatMessage.setProduct(product);
-        chatMessageDAO.save(chatMessage);
+//         User sender = userDAO.findById(chatMessageDTO.getSenderId())
+//                 .orElseThrow(() -> new IllegalArgumentException("Invalid sender ID"));
+//         User recipient = userDAO.findById(chatMessageDTO.getRecipientId())
+//                 .orElseThrow(() -> new IllegalArgumentException("Invalid recipient ID"));
+//         Product product = productDAO.findById(chatMessageDTO.getProductId())
+//                 .orElseThrow(() -> new IllegalArgumentException("Invalid product ID"));
 
-        // Convert to DTO for WebSocket
-        chatMessageDTO.setId(chatMessage.getId());
-        chatMessageDTO.setSentAt(chatMessage.getSentAt().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+//         // Save message to database
+//         ChatMessage chatMessage = new ChatMessage();
+//         chatMessage.setContent(chatMessageDTO.getContent());
+//         chatMessage.setSender(sender);
+//         // chatMessage.setRecipient(recipient);
+//         // chatMessage.setProduct(product);
+//         chatMessageDAO.save(chatMessage);
 
-        // Send to both sender and recipient's topic
-        String destination = String.format("/topic/%d/%d/%d",
-                chatMessageDTO.getProductId(),
-                chatMessageDTO.getSenderId(),
-                chatMessageDTO.getRecipientId());
-        messagingTemplate.convertAndSend(destination, chatMessageDTO);
+//         // Convert to DTO for WebSocket
+//         chatMessageDTO.setId(chatMessage.getId());
+//         chatMessageDTO.setSentAt(chatMessage.getSentAt().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
 
-        String recipientDestination = String.format("/topic/%d/%d/%d",
-                chatMessageDTO.getProductId(),
-                chatMessageDTO.getRecipientId(),
-                chatMessageDTO.getSenderId());
-        messagingTemplate.convertAndSend(recipientDestination, chatMessageDTO);
-    }
-    @GetMapping("/history")
-    public List<ChatMessageDTO> getChatHistory(
-            @RequestParam int productId,
-            @RequestParam int senderId,
-            @RequestParam int recipientId) {
-        List<ChatMessage> messages = chatMessageDAO
-                .findByProductIdAndSenderIdAndRecipientIdOrRecipientIdAndSenderId(
-                        productId, senderId, recipientId, recipientId, senderId);
-        return messages.stream().map(msg -> {
-            ChatMessageDTO dto = new ChatMessageDTO();
-            dto.setId(msg.getId());
-            dto.setContent(msg.getContent());
-            dto.setSenderId(msg.getSender().getId());
-            dto.setRecipientId(msg.getRecipient().getId());
-            dto.setProductId(msg.getProduct().getId());
-            dto.setSentAt(msg.getSentAt().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
-            return dto;
-        }).collect(Collectors.toList());
-    }
+//         // Send to both sender and recipient's topic
+//         String destination = String.format("/topic/%d/%d/%d",
+//                 chatMessageDTO.getProductId(),
+//                 chatMessageDTO.getSenderId(),
+//                 chatMessageDTO.getRecipientId());
+//         messagingTemplate.convertAndSend(destination, chatMessageDTO);
+
+//         String recipientDestination = String.format("/topic/%d/%d/%d",
+//                 chatMessageDTO.getProductId(),
+//                 chatMessageDTO.getRecipientId(),
+//                 chatMessageDTO.getSenderId());
+//         messagingTemplate.convertAndSend(recipientDestination, chatMessageDTO);
+//     }
+//     @GetMapping("/history")
+//     public List<ChatMessageDTO> getChatHistory(
+//             @RequestParam int productId,
+//             @RequestParam int senderId,
+//             @RequestParam int recipientId) {
+//         List<ChatMessage> messages = chatMessageDAO
+//                 .findByProductIdAndSenderIdAndRecipientIdOrRecipientIdAndSenderId(
+//                         productId, senderId, recipientId, recipientId, senderId);
+//         return messages.stream().map(msg -> {
+//             ChatMessageDTO dto = new ChatMessageDTO();
+//             dto.setId(msg.getId());
+//             dto.setContent(msg.getContent());
+//             dto.setSenderId(msg.getSender().getId());
+//         //     dto.setRecipientId(msg.getRecipient().getId());
+//         //     dto.setProductId(msg.getProduct().getId());
+//             dto.setSentAt(msg.getSentAt().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+//             return dto;
+//         }).collect(Collectors.toList());
+//     }
 }

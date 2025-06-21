@@ -133,10 +133,12 @@ public class UserController {
             return ResponseEntity.status(500).body(response);
         }
     }
+
     @PostMapping("/register-ctv")
     public ResponseEntity<CommonApiResponse> registerCTV(@RequestBody RegisterCTVRequest request) {
         return userResource.registerCTV(request);
     }
+    
     @PostMapping("/{id}/confirm-CTV")
     public ResponseEntity<CommonApiResponse> confirmCTV(@PathVariable int id, @RequestParam boolean isConfirmed) {
         boolean result = userService.updateCTVStatus(id, isConfirmed);

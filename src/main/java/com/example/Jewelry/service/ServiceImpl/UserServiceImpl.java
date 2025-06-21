@@ -186,4 +186,26 @@ public class UserServiceImpl implements UserService {
         return userDao.findByUsernameAndStatus(username, status);
     }
 
+    @Override
+    public CTV getCTVById(int userId) {
+        Optional<CTV> optionalUser = this.ctvDao.findById(userId);
+        if (optionalUser.isPresent()) {
+            return optionalUser.get();
+        } else {
+            return null;
+        }
+
+    }
+
+    @Override
+    public CTV getCTVByUserId(int userID) {
+        Optional<User> userOptional = userDao.findById(userID);
+        if (userOptional.isPresent()) {
+            return ctvDao.findByUser(userOptional.get()).orElse(null);
+        } else {
+            return null;
+        }
+
+    }
+
 }

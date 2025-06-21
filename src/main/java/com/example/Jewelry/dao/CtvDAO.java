@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface CtvDAO extends JpaRepository<CTV, Long> {
+public interface CtvDAO extends JpaRepository<CTV, Integer> {
     Optional<CTV> findByUser(User user);
     List<CTV> findByStatus(String status);
 }
