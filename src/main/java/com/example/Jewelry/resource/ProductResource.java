@@ -573,4 +573,22 @@ public class ProductResource {
 
         return new ResponseEntity<ProductResponseDTO>(response, HttpStatus.OK);
     }
+
+    public ResponseEntity<ProductResponseDTO> fetchAllMyProductAuction(int userID) {
+        List<Product> products = auctionProductService
+                .fetchAllMyProductAuction(Constant.ActiveStatus.OPENAUCTION.value(), userID)
+                .stream()
+                .filter(product -> !product.isDeleted())
+                .toList();
+
+        List<ProductDTO> productDTOs = products.stream()
+                .map(this::convertToDTO)
+                .toList();
+
+        ProductResponseDTO responseDTO = new ProductResponseDTO();
+        responseDTO.setProductDTOs(productDTOs);
+        responseDTO.setResponseMessage("Fetched all products successfully");
+
+        return ResponseEntity.ok(responseDTO);
+    }
 }
