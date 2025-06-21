@@ -3,6 +3,7 @@ package com.example.Jewelry.resource;
 import com.example.Jewelry.Utility.Constant;
 import com.example.Jewelry.dao.CategoryDAO;
 import com.example.Jewelry.dao.ProductDAO;
+import com.example.Jewelry.dto.AuctionProductDTO;
 import com.example.Jewelry.dto.ProductDTO;
 import com.example.Jewelry.dto.request.AddProductRequestDTO;
 import com.example.Jewelry.dto.response.CommonApiResponse;
@@ -170,6 +171,19 @@ public class ProductResource {
             }
         }
 
+        AuctionProductDTO auctionProductDTO = null;
+        if (product.getAuctionProduct() != null) {
+            AuctionProduct auction = product.getAuctionProduct();
+            auctionProductDTO = AuctionProductDTO.builder()
+                    .auctionEndTime(auction.getAuctionEndTime())
+                    .budgetAuction(auction.getBudgetAuction())
+                    .quantity(auction.getQuantity())
+                    .status(auction.getStatus())
+                    .author_id(auction.getAuthor() != null ? auction.getAuthor().getId() : 0)
+                    .collaboration_id(auction.getCtv() != null ? auction.getCtv().getId() : 0)
+                    .build();
+        }
+
         return ProductDTO.builder()
                 .id(product.getId())
                 .name(product.getName())
@@ -193,6 +207,7 @@ public class ProductResource {
                 .categoryName(product.getCategory() != null ? product.getCategory().getName() : null)
                 .averageRating(0.0)
                 .totalRating(0)
+                .auctionProductDTO(auctionProductDTO)
                 .build();
     }
 
@@ -557,5 +572,23 @@ public class ProductResource {
         response.setSuccess(false);
 
         return new ResponseEntity<ProductResponseDTO>(response, HttpStatus.OK);
+    }
+
+    public ResponseEntity<ProductResponseDTO> fetchAllMyProductAuction(int userID) {
+        List<Product> products = auctionProductService
+                .fetchAllMyProductAuction(Constant.ActiveStatus.OPENAUCTION.value(), userID)
+                .stream()
+                .filter(product -> !product.isDeleted())
+                .toList();
+
+        List<ProductDTO> productDTOs = products.stream()
+                .map(this::convertToDTO)
+                .toList();
+
+        ProductResponseDTO responseDTO = new ProductResponseDTO();
+        responseDTO.setProductDTOs(productDTOs);
+        responseDTO.setResponseMessage("Fetched all products successfully");
+
+        return ResponseEntity.ok(responseDTO);
     }
 }

@@ -3,6 +3,7 @@ package com.example.Jewelry.service;
 import com.example.Jewelry.entity.AuctionProduct;
 import com.example.Jewelry.entity.Product;
 
+import java.util.Collection;
 import java.util.List;
 
 public interface AuctionProductService {
@@ -17,4 +18,6 @@ public interface AuctionProductService {
     List<AuctionProduct> getAll();
 
     void deleteProduct(int auctionID);
+
+    List<Product> fetchAllMyProductAuction(String value, int userID);
 }

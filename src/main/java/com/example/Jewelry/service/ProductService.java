@@ -4,6 +4,7 @@ import com.example.Jewelry.dto.ProductDTO;
 import com.example.Jewelry.entity.Category;
 import com.example.Jewelry.entity.Product;
 
+import java.util.Collection;
 import java.util.List;
 
 public interface ProductService {
@@ -35,4 +36,6 @@ public interface ProductService {
     List<Product> getByCategoryNameAndStatus(String categoryName, String status);
 
     List<Product> fetchAllProductOpenAuction(String status);
+
+
 }

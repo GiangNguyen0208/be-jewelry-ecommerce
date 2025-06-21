@@ -1,6 +1,7 @@
 package com.example.Jewelry.service.ServiceImpl;
 
 import com.example.Jewelry.dao.AuctionProductDAO;
+import com.example.Jewelry.dao.ProductDAO;
 import com.example.Jewelry.entity.AuctionProduct;
 import com.example.Jewelry.entity.Product;
 import com.example.Jewelry.service.AuctionProductService;
@@ -14,6 +15,8 @@ import java.util.Optional;
 public class AuctionProductServiceImpl implements AuctionProductService {
     @Autowired
     AuctionProductDAO auctionProductDAO;
+    @Autowired
+    private ProductDAO productDAO;
 
     @Override
     public AuctionProduct add(AuctionProduct auctionProduct) {
@@ -49,5 +52,10 @@ public class AuctionProductServiceImpl implements AuctionProductService {
     @Override
     public void deleteProduct(int auctionID) {
         this.auctionProductDAO.deleteById(auctionID);
+    }
+
+    @Override
+    public List<Product> fetchAllMyProductAuction(String status, int userID) {
+        return productDAO.findAllMyProductAuction(status, userID);
     }
 }
