@@ -33,5 +33,7 @@ public class CTV {
     @OneToMany(mappedBy = "ctv", cascade = CascadeType.ALL)
     @JsonIgnore
     private List<AuctionProduct> auctionProducts = new ArrayList<>();
+
+
 }
 
