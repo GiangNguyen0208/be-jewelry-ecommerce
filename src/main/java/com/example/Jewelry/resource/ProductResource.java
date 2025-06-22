@@ -6,11 +6,14 @@ import com.example.Jewelry.dao.ProductDAO;
 import com.example.Jewelry.dto.AuctionProductDTO;
 import com.example.Jewelry.dto.ProductDTO;
 import com.example.Jewelry.dto.request.AddProductRequestDTO;
+import com.example.Jewelry.dto.request.PromoteProductRequestDTO;
+import com.example.Jewelry.dto.response.AuctionDetailDTO;
 import com.example.Jewelry.dto.response.CommonApiResponse;
 import com.example.Jewelry.dto.response.ImageDTO;
 import com.example.Jewelry.dto.response.ProductResponseDTO;
 import com.example.Jewelry.entity.*;
 import com.example.Jewelry.exception.CategorySaveFailedException;
+import com.example.Jewelry.exception.ResourceNotFoundException;
 import com.example.Jewelry.service.*;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
@@ -20,6 +23,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -77,10 +81,10 @@ public class ProductResource {
 
         if (request.getCategoryId() == 0 || request.getDescription() == null
                 || request.getName() == null) {
-                    
-            response.setResponseMessage("missing input " + Boolean.toString(request.getCategoryId() == 0) 
-            + "::" + Boolean.toString(request.getDescription() == null)
-             + "::" + Boolean.toString(request.getName() == null));
+
+            response.setResponseMessage("missing input " + Boolean.toString(request.getCategoryId() == 0)
+                    + "::" + Boolean.toString(request.getDescription() == null)
+                    + "::" + Boolean.toString(request.getName() == null));
             response.setSuccess(false);
             return new ResponseEntity<ProductResponseDTO>(response, HttpStatus.BAD_REQUEST);
         }
@@ -92,10 +96,9 @@ public class ProductResource {
             response.setSuccess(false);
             return new ResponseEntity<ProductResponseDTO>(response, HttpStatus.BAD_REQUEST);
         }
+        User userAddID = this.userService.getUserById(request.getUserAddID());
 
-        User ctvOrAdmin = this.userService.getUserById(request.getUserAddID());
-
-        if (ctvOrAdmin == null) {
+        if (userAddID == null) {
             response.setResponseMessage("admin not found");
             response.setSuccess(false);
             return new ResponseEntity<ProductResponseDTO>(response, HttpStatus.BAD_REQUEST);
@@ -590,5 +593,36 @@ public class ProductResource {
         responseDTO.setResponseMessage("Fetched all products successfully");
 
         return ResponseEntity.ok(responseDTO);
+    }
+
+public ResponseEntity<ProductResponseDTO> fetchAllProductAuctionsForAdmin(int page, int size, String status) {
+    ProductResponseDTO response = new ProductResponseDTO();
+    Page<Product> productPage = auctionProductService.getAllAuctionProductsForAdmin(page, size, status);
+    Page<ProductDTO> dtoPage = productPage.map(ProductDTO::fromEntity);
+    response.setProductPage(dtoPage);
+    response.setSuccess(true);
+    return new ResponseEntity<>(response, HttpStatus.OK);
+}
+
+
+    public ResponseEntity<?> promoteAuctionToStoreProduct(int productId, PromoteProductRequestDTO request) {
+        try {
+            Product promotedProduct = auctionProductService.promoteAuctionToStoreProduct(productId, request);
+            ProductDTO productDTO = ProductDTO.fromEntity(promotedProduct);
+            return ResponseEntity.ok(productDTO);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    public ResponseEntity<?> getAuctionDetailsForAdmin(int auctionProductId) {
+        try {
+            AuctionDetailDTO details = auctionProductService.getAuctionDetailsForAdmin(auctionProductId);
+            return ResponseEntity.ok(details);
+        } catch (ResourceNotFoundException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Lỗi không xác định đã xảy ra.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 }

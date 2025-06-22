@@ -1,6 +1,7 @@
 package com.example.Jewelry.entity;
 
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -81,7 +82,7 @@ public class Product {
     private LocalDateTime updateAt;
 
     private LocalDateTime deletedAt;
-
+    @JsonBackReference
     @OneToOne(mappedBy = "product", cascade = CascadeType.ALL)
     private AuctionProduct auctionProduct;
 }
