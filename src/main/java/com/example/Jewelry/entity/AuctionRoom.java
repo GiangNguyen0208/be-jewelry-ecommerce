@@ -47,7 +47,7 @@ public class AuctionRoom {
     /**
      * Trạng thái chấp nhận từ bên owner để tiến hành Convo
      */
-    private boolean accepted;
+    private String status;
 
     private LocalDateTime createdAt;
 

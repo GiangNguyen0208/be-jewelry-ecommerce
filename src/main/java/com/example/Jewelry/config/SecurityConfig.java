@@ -66,7 +66,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/**",
+                                "/api/ws/**",
                                 "/api/user/login",
                                 "/api/user/register",
                                 "/api/user/confirm",
@@ -104,7 +104,8 @@ public class SecurityConfig {
                                 "/api/payment/create-stripe-session",
                                 "/api/webhook/stripe",
                                 "/api/upload/**",
-                                "/api/auctions/**"
+                                "/api/auctions/**",
+                                "/api/chat/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

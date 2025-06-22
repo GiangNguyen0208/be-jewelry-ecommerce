@@ -33,9 +33,6 @@ public class ReverseAuctionController {
     private ProductResource productResource;
 
     @Autowired
-    private ProductService productService;
-
-    @Autowired
     private CategoryService categoryService;
 
     @Autowired
@@ -72,13 +69,11 @@ public class ReverseAuctionController {
     }
 
     @GetMapping("/fetch-room/my/{userID}")
-    public ResponseEntity<ReverseAuctionResponseDTO> getAvaliableRoomPerAuction(
+    public ResponseEntity<ReverseAuctionResponseDTO> getAvaliableRoomPerAuctionForAuthor(
         @PathVariable("userID") int userID,
-        @RequestParam int auctionID
+        @RequestParam int productID
     ) {
-        return productResource.getAllAuctionChatRoomPerAuction(userID, auctionID);
+        return productResource.getAllAuctionChatRoomPerAuction(userID, productID);
     }
-    
-    
 
 }

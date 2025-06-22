@@ -186,6 +186,10 @@ public class ProductResource {
                     .quantity(auction.getQuantity())
                     .status(auction.getStatus())
                     .author_id(auction.getAuthor() != null ? auction.getAuthor().getId() : 0)
+                    .authorName(auction.getAuthor() != null ? "%s %s".formatted(
+                        auction.getAuthor().getLastName(),
+                        auction.getAuthor().getFirstName()
+                    ) : "Khong ten??")
                     .collaboration_id(auction.getCtv() != null ? auction.getCtv().getId() : 0)
                     .build();
         }
@@ -621,7 +625,7 @@ public class ProductResource {
                             .fail("Lỗi: Auction với ID %d không còn hiệu lực hoặc đã xong rồi!".formatted(auctionID));
                 else {
                     AuctionRoom room = new AuctionRoom();
-                    room.setAccepted(false);
+                    room.setStatus(Constant.CtvStatus.PENDING.value());
                     room.setCollaborator(ctvUser);
                     room.setCurrentAuction(product);
                     room.setProposingPrice(auctionRequestDTO.getProposedPrice());
@@ -638,6 +642,7 @@ public class ProductResource {
         return ResponseEntity.ok(response);
     }
 
+    /** Owner xác nhận hoặc từ chối CTV :)) */
     public ResponseEntity<CommonApiResponse> responseAuctionRequest(String auctionRequestID, boolean accepted) {
         CommonApiResponse response;
         AuctionRoom auctionRoom = auctionProductService.getRoomByID(auctionRequestID);
@@ -651,7 +656,7 @@ public class ProductResource {
             response = CommonApiResponse
                     .fail("Lỗi: Yêu cầu %s không thể được phản hồi do không còn mở".formatted(auctionRequestID));
         } else {
-            auctionRoom.setAccepted(accepted);
+            auctionRoom.setStatus(accepted ? Constant.CtvStatus.APPROVED.value() : Constant.CtvStatus.REJECTED.value());
             auctionProductService.addRoom(auctionRoom);
             response = CommonApiResponse.success("Đã phản hồi");
         }
@@ -660,14 +665,16 @@ public class ProductResource {
         return ResponseEntity.ok(response);
     }
 
-    public ResponseEntity<ReverseAuctionResponseDTO> getAllAuctionChatRoomPerAuction(int userID, int auctionID) {
+    /** Lấy phòng:)) */
+    public ResponseEntity<ReverseAuctionResponseDTO> getAllAuctionChatRoomPerAuction(int userID, int productID) {
         ReverseAuctionResponseDTO response = new ReverseAuctionResponseDTO();
         User user = userService.getUserById(userID);
+        AuctionProduct auctionProduct = auctionProductService.getByProductId(productID);
         if (user == null) {
             response.setSuccess(false);
             response.setResponseMessage("Lỗi: Không có người dùng với ID đó");
         } else {
-            List<AuctionRoom> auctionRooms = auctionProductService.getAuctionRoomsByAuctionID(auctionID);
+            List<AuctionRoom> auctionRooms = auctionProductService.getAuctionRoomsByAuctionID(auctionProduct.getId());
             if (auctionRooms == null) {
                 response.setSuccess(false);
                 response.setResponseMessage("Lỗi: Không có auction đó");
@@ -683,5 +690,4 @@ public class ProductResource {
         return ResponseEntity.ok(response);
     }
 
-    /** Owner xác nhận hoặc từ chối CTV :)) */
 }

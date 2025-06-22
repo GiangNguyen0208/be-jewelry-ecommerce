@@ -14,8 +14,5 @@ import java.util.Optional;
 @Repository
 public interface AuctionProductDAO extends JpaRepository<AuctionProduct, Integer> {
 
-    @Query("SELECT a FROM AuctionProduct a WHERE a.status = :status and a.author.id = :userID")
-    List<AuctionProduct> findAllMyProductAuction(@Param("status") String status, @Param("userID") int userID);
-
     Optional<AuctionProduct> findByProduct(Product product);
 }

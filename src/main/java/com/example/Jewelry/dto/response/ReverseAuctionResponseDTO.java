@@ -41,10 +41,11 @@ public class ReverseAuctionResponseDTO extends CommonApiResponse {
         /** Owner & Collaborator ID */
         private int authorID;
         private int collaboratorID;
+        private String collaboratorName;
 
         /** Other stuff */
         private Double proposingPrice;
-        private boolean accepted;
+        private String status;
         private LocalDateTime createdAt;
 
         public static AuctionRoomDTO fromEntity(AuctionRoom auctionRoom) {
@@ -55,14 +56,14 @@ public class ReverseAuctionResponseDTO extends CommonApiResponse {
             // Lấy các đối tượng liên quan một cách an toàn (tránh NullPointerException)
             AuctionProduct auctionProduct = auctionRoom.getCurrentAuction();
             Product product = (auctionProduct != null) ? auctionProduct.getProduct() : null;
-            User author = (product != null) ? auctionProduct.getAuthor() : null;
+            User author = (auctionProduct != null) ? auctionProduct.getAuthor() : null;
             CTV collaborator = auctionRoom.getCollaborator();
 
             return AuctionRoomDTO.builder()
                     // Thông tin phòng
                     .roomID(auctionRoom.getId().toString())
                     .proposingPrice(auctionRoom.getProposingPrice())
-                    .accepted(auctionRoom.isAccepted())
+                    .status(auctionRoom.getStatus())
                     .createdAt(auctionRoom.getCreatedAt())
 
                     // ID của các đối tượng liên quan
@@ -70,6 +71,8 @@ public class ReverseAuctionResponseDTO extends CommonApiResponse {
                     .productID(product != null ? product.getId() : 0)
                     .authorID(author != null ? author.getId() : 0)
                     .collaboratorID(collaborator != null ? collaborator.getId() : 0)
+                    .collaboratorName(collaborator != null ?
+                    "%s %s".formatted(collaborator.getUser().getLastName(),collaborator.getUser().getFirstName()) : "noname")
 
                     // Thông tin chi tiết từ Product (lấy qua AuctionProduct)
                     .productName(product != null ? product.getName() : null)

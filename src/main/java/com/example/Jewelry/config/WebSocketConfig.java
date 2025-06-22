@@ -19,6 +19,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/ws/reverse-auction").setAllowedOrigins("*").withSockJS();
+        registry.addEndpoint("/api/ws/reverse-auction")
+        .setAllowedOriginPatterns("*")
+        .withSockJS();
     }
 }
