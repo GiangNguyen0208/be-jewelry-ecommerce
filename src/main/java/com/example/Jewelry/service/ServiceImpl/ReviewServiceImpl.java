@@ -119,7 +119,9 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     public double getAverageRatingForProduct(int productId) {
-        return reviewDAO.findAverageRatingByProductId(productId);
+        Double averageRating = reviewDAO.findAverageRatingByProductId(productId);
+
+        return (averageRating == null) ? 0.0 : averageRating;
     }
 
     @Override
