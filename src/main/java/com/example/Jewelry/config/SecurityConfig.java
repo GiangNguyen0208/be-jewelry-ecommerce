@@ -73,14 +73,15 @@ public class SecurityConfig {
                                 "/api/user/register-ctv",
                                 "/api/user/**",
                                 "/oauth2/**",
-                                "/api/product/list",
+                                "/api/topic/**",
+                                "/api/category/**",
+//                                "/api/product/list",
                                 "/api/product/{productId}",
                                 "/api/product/**",
                                 "/api/reverse-auction/**",
                                 "/reviews/product/**",
                                 "/api/wishlist/**",
                                 "/api/cart/**",
-                                "/api/product/**",
                                 "/api/delivery/fetch-user/**",
                                 "/api/delivery/add",
                                 "/api/orders/create",
@@ -88,7 +89,7 @@ public class SecurityConfig {
                                 "/api/verify/verify-otp",
                                 "/api/verify/resend-otp",
                                 "/api/product/list",
-                                "/api/product/{productId}",
+//                                "/api/product/{productId}",
                                 "/api/reviews/product/**",
                                 "/api/reviews/product/{productId}/average-rating",
                                 "/api/reviews/product/{productId}/total-reviews",
@@ -96,7 +97,8 @@ public class SecurityConfig {
                                 "/api/payment/create-stripe-session",
                                 "/api/webhook/stripe",
                                 "/api/upload/**",
-                                "/api/auctions/**"
+                                "/api/auctions/**",
+                                "/api/comment/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
