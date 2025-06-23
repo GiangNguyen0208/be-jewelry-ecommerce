@@ -178,6 +178,7 @@ public class ProductResource {
         if (product.getAuctionProduct() != null) {
             AuctionProduct auction = product.getAuctionProduct();
             auctionProductDTO = AuctionProductDTO.builder()
+                    .id(auction.getId())
                     .auctionEndTime(auction.getAuctionEndTime())
                     .budgetAuction(auction.getBudgetAuction())
                     .quantity(auction.getQuantity())
@@ -261,8 +262,15 @@ public class ProductResource {
                 response.setSuccess(false);
                 return new ResponseEntity<>(response, HttpStatus.CONFLICT);
             }
-
+            //Nếu là sản phẩm đấu giá thì mở lại đấu giá, nếu là sản phẩm thường thì chuyển thành active
+        if (product.getAuctionProduct() != null) {
+            product.setStatus(Constant.ActiveStatus.OPENAUCTION.value());
+            AuctionProduct auctionInfo = product.getAuctionProduct();
+            auctionInfo.setStatus(Constant.ActiveStatus.OPENAUCTION.value());
+            auctionProductService.update(auctionInfo);
+        } else {
             product.setStatus(Constant.ActiveStatus.ACTIVE.value());
+        }
             product.setDeleted(false);
             product.setDeletedAt(null);
             product.setUpdateAt(LocalDateTime.now());
@@ -487,7 +495,6 @@ public class ProductResource {
         auctionProduct.setQuantity(request.getQuantity());
         auctionProduct.setAuctionEndTime(LocalDateTime.now().plusDays(7));
         auctionProduct.setStatus(Constant.ActiveStatus.OPENAUCTION.value());
-
         auctionProductService.add(auctionProduct);
 
         if (savedProduct == null) {

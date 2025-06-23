@@ -96,6 +96,7 @@ public class SecurityConfig {
                                 "/api/payment/create-stripe-session",
                                 "/api/webhook/stripe",
                                 "/api/upload/**",
+                                "/api/category/fetch/all",
                                 "/api/auctions/**"
                         ).permitAll()
                         .anyRequest().authenticated()

@@ -80,20 +80,10 @@ public class AuctionProductServiceImpl implements AuctionProductService {
         AuctionProduct auctionProduct = auctionProductDAO.findById(auctionProductId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy phiên đấu giá với ID: " + auctionProductId));
 
-        Product product = auctionProduct.getProduct();
         User customer = auctionProduct.getAuthor();
         CTV ctv = auctionProduct.getCtv();
 
-        ProductDTO productDTO = ProductDTO.builder()
-                .id(product.getId())
-                .name(product.getName())
-                .description(product.getDescription())
-                .price(product.getPrice())
-                .description(product.getDescription())
-                .productMaterial(product.getProductMaterial())
-                .status(product.getStatus())
-                .categoryName(product.getCategory() != null ? product.getCategory().getName() : null)
-                .build();
+        ProductDTO productDTO = ProductDTO.fromEntity(auctionProduct.getProduct());
 
         CustomerInfoDTO customerInfoDTO = CustomerInfoDTO.builder()
                 .id(customer.getId())

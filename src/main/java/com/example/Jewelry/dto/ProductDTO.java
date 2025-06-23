@@ -53,7 +53,7 @@ public class ProductDTO {
     private int totalRating;
 
     // CTV and Admin add
-    private int ctvOrAdminId;
+    private int userAddID;
 
     public static ProductDTO fromEntity(Product product) {
         if (product == null) return null;
@@ -64,20 +64,35 @@ public class ProductDTO {
                     .map(image -> new ImageDTO(image.getId(), image.getUrl()))
                     .toList();
         }
-
+        AuctionProductDTO auctionProductDTO = null;
+        if (product.getAuctionProduct() != null) {
+            AuctionProduct auction = product.getAuctionProduct();
+            auctionProductDTO = AuctionProductDTO.builder()
+                    .id(auction.getId())
+                    .auctionEndTime(auction.getAuctionEndTime())
+                    .budgetAuction(auction.getBudgetAuction())
+                    .quantity(auction.getQuantity())
+                    .status(auction.getStatus())
+                    .author_id(auction.getAuthor() != null ? auction.getAuthor().getId() : 0)
+                    .collaboration_id(auction.getCtv() != null ? auction.getCtv().getId() : 0)
+                    .build();
+        }
         return ProductDTO.builder()
                 .id(product.getId())
                 .name(product.getName())
+                .description(product.getDescription())
                 .price(product.getPrice())
+                .status(product.getStatus())
                 .prevPrice(product.getPrevPrice())
                 .productIsBadge(product.getProductIsBadge())
                 .imageURLs(imageDTOs)
+                .auctionProductDTO(auctionProductDTO)
                 .build();
     }
 
     public static Product toEntity(ProductDTO dto) {
         Product product = new Product();
-        BeanUtils.copyProperties(dto, product, "id", "ctvOrAdminId", "categoryId");
+        BeanUtils.copyProperties(dto, product, "id", "userAddID", "categoryId");
         return product;
     }
 

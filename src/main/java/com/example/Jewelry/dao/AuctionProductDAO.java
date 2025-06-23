@@ -16,6 +16,6 @@ public interface AuctionProductDAO extends JpaRepository<AuctionProduct, Integer
 
     @Query("SELECT a FROM AuctionProduct a WHERE a.status = :status and a.author.id = :userID")
     List<AuctionProduct> findAllMyProductAuction(@Param("status") String status, @Param("userID") int userID);
-    @Query("SELECT p FROM Product p WHERE p.auctionProduct IS NOT NULL")
+    @Query("SELECT p FROM Product p LEFT JOIN FETCH p.auctionProduct ap WHERE ap IS NOT NULL")
     Page<Product> findAllAuctionProducts(Pageable pageable);
 }
