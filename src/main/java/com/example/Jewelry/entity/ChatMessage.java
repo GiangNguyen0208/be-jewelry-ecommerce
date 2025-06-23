@@ -7,6 +7,11 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
+import com.example.Jewelry.Utility.Constant;
+
+/**
+ * Tin nhắn giữa các phiên đấu giá
+ */
 @Data
 @Entity
 @AllArgsConstructor
@@ -16,20 +21,22 @@ public class ChatMessage {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
+    /**
+     * Chỉ cần người gửi là biết phía nào để front end xử lí
+     */
     @ManyToOne
     @JoinColumn(name = "sender_id", nullable = false)
     private User sender;
 
     @ManyToOne
-    @JoinColumn(name = "recipient_id", nullable = false)
-    private User recipient;
+    @JoinColumn(name = "room_id", nullable = false)
+    private AuctionRoom auctionRoom;
 
-    @ManyToOne
-    @JoinColumn(name = "product_id", nullable = false)
-    private Product product;
+    @Column(nullable = false)
+    private String type = Constant.AuctionMessageType.MESSAGE.value();
 
     @Column(nullable = false)
     private LocalDateTime sentAt;

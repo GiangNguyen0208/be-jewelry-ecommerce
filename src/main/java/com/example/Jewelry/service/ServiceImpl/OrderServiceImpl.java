@@ -5,6 +5,7 @@ import com.example.Jewelry.dto.*;
 import com.example.Jewelry.dto.request.OrderRequestDTO;
 import com.example.Jewelry.dto.response.CommonAPIResForOrder;
 import com.example.Jewelry.entity.*;
+import com.example.Jewelry.entity.Order.OrderStatus;
 import com.example.Jewelry.dao.*;
 import com.example.Jewelry.exception.BusinessException;
 import com.example.Jewelry.exception.ResourceNotFoundException;
@@ -266,8 +267,52 @@ public class OrderServiceImpl implements OrderService {
     }
 
     public List<Order> getAllOrders() {
+        String userEmail = getCurrentUserEmail();
+        User user = userRepo.findByEmailId(userEmail);
+        if (user == null) {
+            throw new ResourceNotFoundException("Người dùng với email " + userEmail + " không tìm thấy.");
+        }
+        if (user.getRole() == null || !user.getRole().equalsIgnoreCase("admin")) {
+            throw new ResourceNotFoundException("Người dùng với email " + userEmail + " không phải là admin.");
+        }
         return orderRepo.findAll();
     }
+
+    public Order getSingleOrder(int orderID) {
+        String userEmail = getCurrentUserEmail();
+        User user = userRepo.findByEmailId(userEmail);
+        if (user == null) {
+            throw new ResourceNotFoundException("Người dùng với email " + userEmail + " không tìm thấy.");
+        }
+        if (user.getRole() == null || !user.getRole().equalsIgnoreCase("admin")) {
+            throw new ResourceNotFoundException("Người dùng với email " + userEmail + " không phải là admin.");
+        }
+        return orderRepo.findById(orderID).orElse(null);
+    }
+
+    public boolean updateOrderStatus(Order singleOrder, OrderStatus newStatus) {
+        String userEmail = getCurrentUserEmail();
+        User user = userRepo.findByEmailId(userEmail);
+        if (user == null) {
+            throw new ResourceNotFoundException("Người dùng với email " + userEmail + " không tìm thấy.");
+        }
+        if (user.getRole() == null || !user.getRole().equalsIgnoreCase("admin")) {
+            throw new ResourceNotFoundException("Người dùng với email " + userEmail + " không phải là admin.");
+        }
+        OrderStatus oldStatus = singleOrder.getStatus();
+        // you can not update a cancelled or confirmed order
+        if (oldStatus == OrderStatus.CANCELLED || oldStatus == OrderStatus.CONFIRM)
+            return false;
+        // you can not update to the same value
+        if (oldStatus == newStatus)
+            return false;
+        // you can not update the unpaid order?
+        singleOrder.setStatus(newStatus);
+        orderRepo.save(singleOrder);
+        return true;
+    }
+
+
 
 
     public CommonAPIResForOrder getOrderStatus(Integer orderId) {

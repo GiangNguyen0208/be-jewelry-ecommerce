@@ -3,8 +3,13 @@ package com.example.Jewelry.dto;
 import java.util.List;
 
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import com.example.Jewelry.controller.ProductController;
+import com.example.Jewelry.dao.ProductDAO;
+import com.example.Jewelry.entity.Image;
 import com.example.Jewelry.entity.OrderItem;
+import com.example.Jewelry.entity.Product;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,6 +21,8 @@ public class OrderItemDTO {
     private Integer productId;
 
     private String productName;
+
+    private String productImageUrl;
 
     private Integer quantity;
 
@@ -29,7 +36,7 @@ public class OrderItemDTO {
 
         OrderItemDTO result = new OrderItemDTO();
         result.setProductId(item.getProductId());
-        result.setProductName(null);
+        
         result.setPrice(item.getPrice());
         result.setQuantity(item.getQuantity());
 

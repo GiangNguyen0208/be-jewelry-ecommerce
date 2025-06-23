@@ -13,8 +13,8 @@ public interface ReviewDAO extends JpaRepository<Review, Integer> {
 
     boolean existsByProductIdAndUserId(int productId, int userId);
 
-    @Query("SELECT AVG(r.rating) FROM Review r WHERE r.productId = :productId")
-    double findAverageRatingByProductId(int productId);
+    @Query("SELECT COALESCE(AVG(r.rating), 0) FROM Review r WHERE r.productId = :productId")
+    Double findAverageRatingByProductId(int productId);
 
     @Query("SELECT r FROM Review r WHERE r.productId = :productId AND r.rating = :rating ORDER BY r.createdAt DESC")
     List<Review> findByProductIdAndRating(int productId, int rating);

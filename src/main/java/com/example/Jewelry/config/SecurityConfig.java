@@ -66,10 +66,17 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
+                                "/api/ws/**",
                                 "/api/user/login",
                                 "/api/user/register",
                                 "/api/user/confirm",
                                 "/api/user/resend-confirmation",
+                                "/api/product/**",
+                                "/api/category/**",
+                                "/api/user/info/**",
+                                "/api/user/users",
+                                "/api/delivery/**",
+                                "/api/user/info/**",
                                 "/api/user/register-ctv",
                                 "/api/user/**",
                                 "/oauth2/**",
@@ -93,12 +100,15 @@ public class SecurityConfig {
                                 "/api/reviews/product/**",
                                 "/api/reviews/product/{productId}/average-rating",
                                 "/api/reviews/product/{productId}/total-reviews",
+                                "/api/category/**",
                                 "/api/verify/resend-otp",
                                 "/api/payment/create-stripe-session",
                                 "/api/webhook/stripe",
                                 "/api/upload/**",
                                 "/api/auctions/**",
                                 "/api/comment/**"
+                                "/api/auctions/**",
+                                "/api/chat/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
@@ -115,6 +125,7 @@ public class SecurityConfig {
                         .failureHandler(customOAuth2FailureHandler)
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
         http.addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }

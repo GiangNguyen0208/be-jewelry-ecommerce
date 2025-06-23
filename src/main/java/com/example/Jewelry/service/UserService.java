@@ -2,6 +2,7 @@ package com.example.Jewelry.service;
 
 
 import com.example.Jewelry.dto.request.RegisterCTVRequest;
+import com.example.Jewelry.entity.CTV;
 import com.example.Jewelry.entity.User;
 
 import java.util.List;
@@ -40,4 +41,8 @@ public interface UserService {
     Optional<User> verifyResetPasswordToken(String token);
 
     User getUserByUsernameAndStatus(String email, String value);
+
+    CTV getCTVById(int userId);
+
+    CTV getCTVByUserId(int ctvID);
 }
