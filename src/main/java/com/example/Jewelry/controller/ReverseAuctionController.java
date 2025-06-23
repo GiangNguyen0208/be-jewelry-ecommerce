@@ -2,6 +2,7 @@ package com.example.Jewelry.controller;
 
 import com.example.Jewelry.dto.request.AddProductRequestDTO;
 import com.example.Jewelry.dto.request.ReverseAuctionRequestDTO;
+import com.example.Jewelry.dto.request.UpdateAuctionDetailDTO;
 import com.example.Jewelry.dto.response.CommonApiResponse;
 import com.example.Jewelry.dto.response.ProductResponseDTO;
 import com.example.Jewelry.dto.response.ReverseAuctionResponseDTO;
@@ -75,6 +76,14 @@ public class ReverseAuctionController {
         @RequestParam int productID
     ) {
         return productResource.getAllAuctionChatRoomPerAuction(userID, productID);
+    }
+
+    /** cập nhật giữa chừng */
+    @PostMapping("/update-product")
+    public ResponseEntity<ReverseAuctionResponseDTO> updateAuctionProduct(
+        @RequestBody UpdateAuctionDetailDTO dto
+    ) {
+        return productResource.updateAuctionProduct(dto);
     }
 
 }

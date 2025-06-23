@@ -98,5 +98,7 @@ public class ReverseAuctionResponseDTO extends CommonApiResponse {
 
     /** For chat room list */
     private List<AuctionRoomDTO> roomList;
+    /** For single */
+    private AuctionRoomDTO room;
 
 }
