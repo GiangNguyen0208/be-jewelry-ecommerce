@@ -669,6 +669,7 @@ public class ProductResource {
     public ResponseEntity<ReverseAuctionResponseDTO> getAllAuctionChatRoomPerAuction(int userID, int productID) {
         ReverseAuctionResponseDTO response = new ReverseAuctionResponseDTO();
         User user = userService.getUserById(userID);
+        CTV ctvUser = userService.getCTVByUserId(userID);
         AuctionProduct auctionProduct = auctionProductService.getByProductId(productID);
         if (user == null) {
             response.setSuccess(false);
@@ -679,7 +680,17 @@ public class ProductResource {
                 response.setSuccess(false);
                 response.setResponseMessage("Lỗi: Không có auction đó");
             } else {
-                List<AuctionRoomDTO> auctionRoomsDTO = auctionRooms.stream().map(AuctionRoomDTO::fromEntity).toList();
+                System.out.println("");
+                List<AuctionRoomDTO> auctionRoomsDTO = auctionRooms.stream()
+                .filter(room -> {
+                    // neu la ctv thi loc chi nhung cai co ho
+                    if (ctvUser != null) {
+                        return room.getCollaborator().getUser().equals(user);
+                    }
+                    //con lai co the thay moi nguoi
+                    return room.getCurrentAuction().getAuthor().equals(user);
+                })
+                .map(AuctionRoomDTO::fromEntity).toList();
                 response.setSuccess(true);
                 response.setResponseMessage("Oke");
                 response.setRoomList(auctionRoomsDTO);

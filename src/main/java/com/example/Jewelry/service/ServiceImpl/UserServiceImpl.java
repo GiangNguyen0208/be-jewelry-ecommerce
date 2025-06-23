@@ -190,7 +190,10 @@ public class UserServiceImpl implements UserService {
     public CTV getCTVById(int userId) {
         Optional<CTV> optionalUser = this.ctvDao.findById(userId);
         if (optionalUser.isPresent()) {
-            return optionalUser.get();
+            CTV ctv = optionalUser.get();
+            if (ctv.getStatus().equals(Constant.CtvStatus.APPROVED.value()))
+                return ctv;
+            return null;
         } else {
             return null;
         }
@@ -201,7 +204,14 @@ public class UserServiceImpl implements UserService {
     public CTV getCTVByUserId(int userID) {
         Optional<User> userOptional = userDao.findById(userID);
         if (userOptional.isPresent()) {
-            return ctvDao.findByUser(userOptional.get()).orElse(null);
+            Optional<CTV> ctvOptional = ctvDao.findByUser(userOptional.get());
+            if (!ctvOptional.isPresent())
+                return null;
+
+            CTV ctv = ctvOptional.get();
+            if (ctv.getStatus().equals(Constant.CtvStatus.APPROVED.value()))
+                return ctv;
+            return null;
         } else {
             return null;
         }

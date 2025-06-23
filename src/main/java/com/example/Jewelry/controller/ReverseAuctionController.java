@@ -68,9 +68,10 @@ public class ReverseAuctionController {
         return productResource.responseAuctionRequest(auctionRequestID, accepted);
     }
 
+    /** Dựa trên ROLE mà nó sẽ trả về khác nhau */
     @GetMapping("/fetch-room/my/{userID}")
     public ResponseEntity<ReverseAuctionResponseDTO> getAvaliableRoomPerAuctionForAuthor(
-        @PathVariable("userID") int userID,
+        @PathVariable int userID,
         @RequestParam int productID
     ) {
         return productResource.getAllAuctionChatRoomPerAuction(userID, productID);

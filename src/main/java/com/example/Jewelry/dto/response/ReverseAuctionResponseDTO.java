@@ -40,7 +40,7 @@ public class ReverseAuctionResponseDTO extends CommonApiResponse {
 
         /** Owner & Collaborator ID */
         private int authorID;
-        private int collaboratorID;
+        private int collaboratorUserID;
         private String collaboratorName;
 
         /** Other stuff */
@@ -70,7 +70,7 @@ public class ReverseAuctionResponseDTO extends CommonApiResponse {
                     .auctionID(auctionProduct != null ? auctionProduct.getId() : 0)
                     .productID(product != null ? product.getId() : 0)
                     .authorID(author != null ? author.getId() : 0)
-                    .collaboratorID(collaborator != null ? collaborator.getId() : 0)
+                    .collaboratorUserID(collaborator != null ? collaborator.getUser().getId() : 0)
                     .collaboratorName(collaborator != null ?
                     "%s %s".formatted(collaborator.getUser().getLastName(),collaborator.getUser().getFirstName()) : "noname")
 

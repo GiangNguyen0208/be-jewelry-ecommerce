@@ -27,6 +27,6 @@ public interface ProductDAO extends JpaRepository<Product, Integer> {
     @Query("SELECT p FROM Product p WHERE p.status = :status")
     List<Product> findAllByStatusOpenAuction(@Param("status") String status);
 
-    @Query("SELECT p FROM Product p join AuctionProduct a ON p.id = a.product.id join AuctionRoom r ON r.currentAuction.id = a.id WHERE p.status = :status and (a.author.id = :userID OR r.collaborator.id = :userID)")
+    @Query("SELECT p FROM Product p join AuctionProduct a ON p.id = a.product.id join AuctionRoom r ON r.currentAuction.id = a.id WHERE p.status = :status and (a.author.id = :userID OR r.collaborator.user.id = :userID)")
     List<Product> findAllMyProductAuction(@Param("status") String status, @Param("userID") int userID);
 }
