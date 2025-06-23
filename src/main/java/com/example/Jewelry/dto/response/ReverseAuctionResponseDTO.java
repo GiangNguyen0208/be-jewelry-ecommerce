@@ -46,6 +46,7 @@ public class ReverseAuctionResponseDTO extends CommonApiResponse {
         /** Other stuff */
         private Double proposingPrice;
         private String status;
+        private String statusCTV;
         private LocalDateTime createdAt;
 
         public static AuctionRoomDTO fromEntity(AuctionRoom auctionRoom) {
@@ -88,6 +89,8 @@ public class ReverseAuctionResponseDTO extends CommonApiResponse {
                                     .map(ImageDTO::fromEntity) // Giả định có phương thức fromEntity trong ImageDTO
                                     .collect(Collectors.toList())
                                     : Collections.emptyList())
+                    .status(auctionRoom.getStatus())
+                    .statusCTV(auctionRoom.getStatusCTV())
                     .build();
         }
 

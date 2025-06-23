@@ -51,38 +51,51 @@ public class ChatController {
                 .orElseThrow(() -> new IllegalArgumentException("Invalid sender ID"));
 
         AuctionRoom auctionRoom = auctionDAO.findById(UUID.fromString(chatMessageDTO.getRoomId())).orElseThrow(
-            () -> new IllegalArgumentException("Auction not found")
-        );
+                () -> new IllegalArgumentException("Auction not found"));
 
         // Save message to database
         ChatMessage chatMessage = new ChatMessage();
-        chatMessage.setContent(chatMessageDTO.getContent());
+        chatMessage.setType(chatMessageDTO.getType());
         chatMessage.setSender(sender);
         chatMessage.setAuctionRoom(auctionRoom);
 
-        // Edge cases: ACCEPT or REJECT
-        if (chatMessageDTO.getType().equals(Constant.AuctionMessageType.ACCEPT.value())) {
-            // xử lí accept đợi
-            if (sender.getId() == auctionRoom.getCollaborator().getUser().getId())
-                auctionRoom.setStatusCTV(Constant.CtvStatus.APPROVED.value());
-            else if (sender.getId() == auctionRoom.getCurrentAuction().getAuthor().getId())
-                auctionRoom.setStatus(Constant.CtvStatus.APPROVED.value());
+        // Edge cases: ACCEPT or REJECT or PENDING
+        if (chatMessageDTO.getType().equals(Constant.AuctionMessageType.ACCEPT.value()) ||
+                chatMessageDTO.getType().equals(Constant.AuctionMessageType.REJECT.value()) ||
+                chatMessageDTO.getType().equals(Constant.AuctionMessageType.PENDING.value())) {
+            if (chatMessageDTO.getType().equals(Constant.AuctionMessageType.ACCEPT.value())) {
+                // xử lí accept đợi
+                if (sender.getId() == auctionRoom.getCollaborator().getUser().getId())
+                    auctionRoom.setStatusCTV(Constant.CtvStatus.APPROVED.value());
+                else if (sender.getId() == auctionRoom.getCurrentAuction().getAuthor().getId())
+                    auctionRoom.setStatus(Constant.CtvStatus.APPROVED.value());
+                chatMessage.setContent("%s sẵn sàng chấp nhận.".formatted(sender.getFirstName()));
 
+            } else if (chatMessageDTO.getType().equals(Constant.AuctionMessageType.REJECT.value())) {
+                // xử lí hủy
+                if (sender.getId() == auctionRoom.getCollaborator().getUser().getId())
+                    auctionRoom.setStatusCTV(Constant.CtvStatus.REJECTED.value());
+                else if (sender.getId() == auctionRoom.getCurrentAuction().getAuthor().getId())
+                    auctionRoom.setStatus(Constant.CtvStatus.REJECTED.value());
+                chatMessage.setContent("%s muốn từ chối chấp nhận.".formatted(sender.getFirstName()));
+            } else if (chatMessageDTO.getType().equals(Constant.AuctionMessageType.PENDING.value())) {
+                // xử lí hủy
+                if (sender.getId() == auctionRoom.getCollaborator().getUser().getId())
+                    auctionRoom.setStatusCTV(Constant.CtvStatus.PENDING.value());
+                else if (sender.getId() == auctionRoom.getCurrentAuction().getAuthor().getId())
+                    auctionRoom.setStatus(Constant.CtvStatus.PENDING.value());
+                chatMessage.setContent("%s còn do dự.".formatted(sender.getFirstName()));
+            }
             auctionDAO.save(auctionRoom);
         } else {
-            // xử lí hủy
-            if (sender.getId() == auctionRoom.getCollaborator().getUser().getId())
-                auctionRoom.setStatusCTV(Constant.CtvStatus.REJECTED.value());
-            else if (sender.getId() == auctionRoom.getCurrentAuction().getAuthor().getId())
-                auctionRoom.setStatus(Constant.CtvStatus.REJECTED.value());
-
-            auctionDAO.save(auctionRoom);
+            chatMessage.setContent(chatMessageDTO.getContent());
         }
         chatMessage = chatMessageDAO.save(chatMessage);
 
         // Convert to DTO for WebSocket
         chatMessageDTO.setId(chatMessage.getId());
         chatMessageDTO.setSentAt(chatMessage.getSentAt().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+        chatMessageDTO.setContent(chatMessage.getContent());
 
         // Send to recipient's topic
         String destination = String.format("/topic/reverse-auction/%s", chatMessageDTO.getRoomId());
@@ -92,8 +105,7 @@ public class ChatController {
     @GetMapping("/history")
     public List<ChatMessageDTO> getChatHistory(@RequestParam String roomID) {
         AuctionRoom auctionRoom = auctionDAO.findById(UUID.fromString(roomID)).orElseThrow(
-            () -> new IllegalArgumentException("Auction not found")
-        );
+                () -> new IllegalArgumentException("Auction not found"));
 
         List<ChatMessage> messages = chatMessageDAO.findByAuctionRoom(auctionRoom);
         return messages.stream().map(msg -> {
