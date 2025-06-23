@@ -1,6 +1,7 @@
 package com.example.Jewelry.controller;
 
 import com.example.Jewelry.Utility.Constant;
+import com.example.Jewelry.dao.AuctionProductDAO;
 import com.example.Jewelry.dao.AuctionRoomDAO;
 import com.example.Jewelry.dao.ChatMessageDAO;
 import com.example.Jewelry.dao.ProductDAO;
@@ -13,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -41,7 +41,10 @@ public class ChatController {
     private ProductDAO productDAO;
 
     @Autowired
-    private AuctionRoomDAO auctionDAO;
+    private AuctionProductDAO auctionProductDAO;
+
+    @Autowired
+    private AuctionRoomDAO auctionRoomDAO;
 
     @MessageMapping("/sendMessage")
     public void sendMessage(@Payload ChatMessageDTO chatMessageDTO) {
@@ -50,7 +53,7 @@ public class ChatController {
         User sender = userDAO.findById(chatMessageDTO.getSenderId())
                 .orElseThrow(() -> new IllegalArgumentException("Invalid sender ID"));
 
-        AuctionRoom auctionRoom = auctionDAO.findById(UUID.fromString(chatMessageDTO.getRoomId())).orElseThrow(
+        AuctionRoom auctionRoom = auctionRoomDAO.findById(UUID.fromString(chatMessageDTO.getRoomId())).orElseThrow(
                 () -> new IllegalArgumentException("Auction not found"));
 
         // Save message to database
@@ -86,7 +89,18 @@ public class ChatController {
                     auctionRoom.setStatus(Constant.CtvStatus.PENDING.value());
                 chatMessage.setContent("%s còn do dự.".formatted(sender.getFirstName()));
             }
-            auctionDAO.save(auctionRoom);
+            auctionRoom = auctionRoomDAO.save(auctionRoom);
+
+            if (auctionRoom.getStatus().equals(auctionRoom.getStatusCTV())) {
+                if (auctionRoom.getStatus().equals(Constant.CtvStatus.APPROVED.value())) {
+                    auctionRoom.getCurrentAuction().setStatus(Constant.ActiveStatus.DEACTIVATED.value());
+                    auctionRoom.getCurrentAuction().getProduct().setStatus(Constant.ActiveStatus.DEACTIVATED.value());
+
+                    productDAO.save(auctionRoom.getCurrentAuction().getProduct());
+                    auctionProductDAO.save(auctionRoom.getCurrentAuction());
+                    chatMessage.setContent(chatMessage.getContent() + "\n" + "Chốt đấu giá này xong!");
+                }
+            }
         } else {
             chatMessage.setContent(chatMessageDTO.getContent());
         }
@@ -104,7 +118,7 @@ public class ChatController {
 
     @GetMapping("/history")
     public List<ChatMessageDTO> getChatHistory(@RequestParam String roomID) {
-        AuctionRoom auctionRoom = auctionDAO.findById(UUID.fromString(roomID)).orElseThrow(
+        AuctionRoom auctionRoom = auctionRoomDAO.findById(UUID.fromString(roomID)).orElseThrow(
                 () -> new IllegalArgumentException("Auction not found"));
 
         List<ChatMessage> messages = chatMessageDAO.findByAuctionRoom(auctionRoom);
