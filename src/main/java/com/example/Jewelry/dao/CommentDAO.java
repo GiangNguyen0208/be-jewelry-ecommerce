@@ -15,7 +15,7 @@ public interface CommentDAO  extends JpaRepository<Comment, Integer> {
     @Query("SELECT c FROM Comment c WHERE c.topic.id = :topicID AND c.parentComment IS NULL")
     List<Comment> findByTopicIdAndParentCommentIsNull(@Param("topicID") int topicID);
 
-    @Query("select c from Comment c where c.parentComment.id = :parentId ")
+    @Query("select c from Comment c where c.parentComment.id = :parentId")
     List<Comment> findByParentCommentId(@Param("parentId") int parentId);
 
 }

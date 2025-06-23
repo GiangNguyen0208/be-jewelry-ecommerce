@@ -29,6 +29,9 @@ public class Topic {
     @Column(nullable = false)
     private String status;
 
+    @Column(nullable = false)
+    private int views;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

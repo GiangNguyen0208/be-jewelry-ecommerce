@@ -161,7 +161,7 @@ public class TopicServiceImpl implements TopicService {
         response.setStatus(topic.getStatus());
         response.setCreatedAt(topic.getCreatedAt());
         response.setDeleted(false);
-        response.setAuthor(topic.getAuthor().getFirstName() + " " + topic.getAuthor().getLastName());
+        response.setAuthor(topic.getAuthor().getUsername());
         response.setCategoryName(topic.getCategory().getName());
         response.setCommentDTOS(commentDTOS);
         return new ResponseEntity<>(response, HttpStatus.OK);

@@ -65,6 +65,7 @@ public class CommentServiceImpl implements CommentService {
         comment.setTopic(topicOpt.get());
         comment.setCreatedAt(LocalDateTime.now());
         comment.setDeleted(false);
+        comment.setPositive(request.isPositive());
 
         // Nếu có parentCommentID > 0 thì tìm comment cha
         if (request.getParentCommentID() > 0) {
@@ -95,6 +96,7 @@ public class CommentServiceImpl implements CommentService {
                         .topicID(comment.getTopic().getId())
                         .avatar(comment.getAuthor().getAvatar())
                         .createdAt(comment.getCreatedAt())
+                        .isPositive(comment.isPositive())
                         .authorName(comment.getAuthor().getUsername())
 //                        .commentID(0) // không có cha
 //                        .level(0)
@@ -119,6 +121,7 @@ public class CommentServiceImpl implements CommentService {
                         .avatar(comment.getAuthor().getAvatar())
                         .createdAt(comment.getCreatedAt())
                         .authorName(comment.getAuthor().getUsername())
+                        .isPositive(comment.isPositive())
 //                        .commentID(0) // không có cha
 //                        .level(0)
                         .build())

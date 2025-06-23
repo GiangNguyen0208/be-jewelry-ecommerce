@@ -106,7 +106,7 @@ public class SecurityConfig {
                                 "/api/webhook/stripe",
                                 "/api/upload/**",
                                 "/api/auctions/**",
-                                "/api/comment/**"
+                                "/api/comment/**",
                                 "/api/auctions/**",
                                 "/api/chat/**"
                         ).permitAll()
