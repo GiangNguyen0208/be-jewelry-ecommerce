@@ -160,6 +160,7 @@ public class CategoryResource {
 
         for (Category category : categories) {
             CategoryDTO categoryDTO = CategoryDTO.builder()
+                    .id(category.getId())
                     .name(category.getName())
                     .status(category.getStatus())
                     .thumbnail(category.getThumbnail())

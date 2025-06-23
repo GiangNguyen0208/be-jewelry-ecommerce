@@ -30,6 +30,8 @@ public class CommentDTO {
 
     private int commentID;
 
+    private String type;
+
     private LocalDateTime createdAt;
 
     private String authorName;

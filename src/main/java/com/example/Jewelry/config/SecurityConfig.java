@@ -115,7 +115,6 @@ public class SecurityConfig {
                         .failureHandler(customOAuth2FailureHandler)
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-
         http.addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }

@@ -59,6 +59,7 @@ public class CommentServiceImpl implements CommentService {
         }
 
         Comment comment = new Comment();
+        comment.setType(request.getType());
         comment.setContent(request.getContent());
         comment.setAuthor(userOpt.get());
         comment.setTopic(topicOpt.get());
@@ -89,6 +90,7 @@ public class CommentServiceImpl implements CommentService {
                         .id(comment.getId())
                         .content(comment.getContent())
                         .isDeleted(comment.isDeleted())
+                        .type(comment.getType())
                         .userID(comment.getAuthor().getId())
                         .topicID(comment.getTopic().getId())
                         .avatar(comment.getAuthor().getAvatar())
@@ -111,6 +113,7 @@ public class CommentServiceImpl implements CommentService {
                         .id(comment.getId())
                         .content(comment.getContent())
                         .isDeleted(comment.isDeleted())
+                        .type(comment.getType())
                         .userID(comment.getAuthor().getId())
                         .topicID(comment.getTopic().getId())
                         .avatar(comment.getAuthor().getAvatar())
