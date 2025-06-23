@@ -3,6 +3,8 @@ package com.example.Jewelry.entity;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import com.example.Jewelry.Utility.Constant;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -45,9 +47,14 @@ public class AuctionRoom {
     private Double proposingPrice;
 
     /**
-     * Trạng thái chấp nhận từ bên owner để tiến hành Convo
+     * Trạng thái chấp nhận từ bên owner để chốt
      */
-    private String status;
+    private String status = Constant.CtvStatus.PENDING.value();
+
+    /**
+     * Trạng thái chấp nhận từ bên ctv để chốt (mượn trường constant.ctvstatus)
+     */
+    private String statusCTV = Constant.CtvStatus.PENDING.value();
 
     private LocalDateTime createdAt;
 

@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
+import com.example.Jewelry.Utility.Constant;
+
 /**
  * Tin nhắn giữa các phiên đấu giá
  */
@@ -32,6 +34,9 @@ public class ChatMessage {
     @ManyToOne
     @JoinColumn(name = "room_id", nullable = false)
     private AuctionRoom auctionRoom;
+
+    @Column(nullable = false)
+    private String type = Constant.AuctionMessageType.MESSAGE.value();
 
     @Column(nullable = false)
     private LocalDateTime sentAt;

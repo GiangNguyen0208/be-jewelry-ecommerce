@@ -1,5 +1,6 @@
 package com.example.Jewelry.controller;
 
+import com.example.Jewelry.Utility.Constant;
 import com.example.Jewelry.dao.AuctionRoomDAO;
 import com.example.Jewelry.dao.ChatMessageDAO;
 import com.example.Jewelry.dao.ProductDAO;
@@ -58,6 +59,25 @@ public class ChatController {
         chatMessage.setContent(chatMessageDTO.getContent());
         chatMessage.setSender(sender);
         chatMessage.setAuctionRoom(auctionRoom);
+
+        // Edge cases: ACCEPT or REJECT
+        if (chatMessageDTO.getType().equals(Constant.AuctionMessageType.ACCEPT.value())) {
+            // xử lí accept đợi
+            if (sender.getId() == auctionRoom.getCollaborator().getUser().getId())
+                auctionRoom.setStatusCTV(Constant.CtvStatus.APPROVED.value());
+            else if (sender.getId() == auctionRoom.getCurrentAuction().getAuthor().getId())
+                auctionRoom.setStatus(Constant.CtvStatus.APPROVED.value());
+
+            auctionDAO.save(auctionRoom);
+        } else {
+            // xử lí hủy
+            if (sender.getId() == auctionRoom.getCollaborator().getUser().getId())
+                auctionRoom.setStatusCTV(Constant.CtvStatus.REJECTED.value());
+            else if (sender.getId() == auctionRoom.getCurrentAuction().getAuthor().getId())
+                auctionRoom.setStatus(Constant.CtvStatus.REJECTED.value());
+
+            auctionDAO.save(auctionRoom);
+        }
         chatMessage = chatMessageDAO.save(chatMessage);
 
         // Convert to DTO for WebSocket
