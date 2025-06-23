@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import java.nio.charset.StandardCharsets;
 import java.io.IOException;
+import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/api/webhook")
@@ -83,6 +84,7 @@ public class StripeWebhookController {
                 Order order = orderRepo.findById(orderId).orElse(null);
                 if (order != null && order.getPayment() != null) {
                     order.getPayment().setPaymentStatus(Payment.PaymentStatus.PAID);
+                    order.getPayment().setPaymentDate(LocalDateTime.now());
                     orderRepo.save(order);
                     System.out.println("✅ Đã cập nhật trạng thái thanh toán cho đơn hàng " + orderId);
                 } else {

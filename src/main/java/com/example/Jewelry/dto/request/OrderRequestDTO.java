@@ -14,6 +14,6 @@ public class OrderRequestDTO {
     private Integer deliveryAddressId;
     private Double totalAmount;
     private Double discount;
-    private Boolean paymentMethod;
+    private String paymentMethod;
 
 }

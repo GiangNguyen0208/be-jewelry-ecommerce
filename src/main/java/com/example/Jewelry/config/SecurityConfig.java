@@ -20,8 +20,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.List;
 
@@ -87,16 +85,17 @@ public class SecurityConfig {
                                 "/api/verify/verify-otp",
                                 "/api/verify/resend-otp",
                                 "/api/product/list",
+                                "/api/product/{productImageName}",
                                 "/api/product/{productId}",
                                 "/api/reviews/product/**",
-                                "/api/product/{productImageName}",
                                 "/api/reviews/product/{productId}/average-rating",
                                 "/api/reviews/product/{productId}/total-reviews",
                                 "/api/verify/resend-otp",
                                 "/api/payment/create-stripe-session",
                                 "/api/webhook/stripe",
                                 "/api/upload/**",
-                                "/api/auctions/**"
+                                "/api/auctions/**",
+                                "/api/category/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

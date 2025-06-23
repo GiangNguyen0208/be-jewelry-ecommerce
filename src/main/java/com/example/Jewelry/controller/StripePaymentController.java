@@ -31,21 +31,24 @@ public class StripePaymentController {
             return ResponseEntity.badRequest().body("Đơn hàng đã được thanh toán.");
         }
 
-        long amountInVND = Math.round(order.getTotalPrice());
+        double exchangeRate = 26000.0; // Tỷ giá USD/VND
+        double amountInUSD = order.getTotalPrice() / exchangeRate;
+        long amountInCents = Math.round(amountInUSD * 100); // Stripe yêu cầu đơn vị cents
+
 
         SessionCreateParams params = SessionCreateParams.builder()
                 .setMode(SessionCreateParams.Mode.PAYMENT)
-                .setSuccessUrl("http://localhost:3000/payment/success")
+                .setSuccessUrl("http://localhost:3000/payment")
                 .setCancelUrl("https://yourdomain.com/payment-cancel?orderId=" + order.getId())
                 .putMetadata("orderId", String.valueOf(order.getId()))
-                .putMetadata("amount", String.valueOf(amountInVND))
+                .putMetadata("amount", String.valueOf(amountInCents))
                 .addLineItem(
                         SessionCreateParams.LineItem.builder()
                                 .setQuantity(1L)
                                 .setPriceData(
                                         SessionCreateParams.LineItem.PriceData.builder()
-                                                .setCurrency("vnd")
-                                                .setUnitAmount(amountInVND)
+                                                .setCurrency("usd")
+                                                .setUnitAmount(amountInCents)
                                                 .setProductData(
                                                         SessionCreateParams.LineItem.PriceData.ProductData.builder()
                                                                 .setName("Thanh toán đơn hàng #" + order.getId())

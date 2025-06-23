@@ -21,7 +21,7 @@ public class Payment {
     private Order order;
 
     public enum PaymentMethod {
-        QR_Payment, COD
+        online, COD
     }
 
     @Enumerated(EnumType.STRING)

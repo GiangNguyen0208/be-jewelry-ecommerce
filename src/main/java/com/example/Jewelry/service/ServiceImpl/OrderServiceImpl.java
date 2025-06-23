@@ -90,7 +90,7 @@ public class OrderServiceImpl implements OrderService {
         Payment payment = new Payment();
         payment.setOrder(order);
         payment.setPaymentStatus(Payment.PaymentStatus.PENDING);
-        payment.setPaymentMethod(dto.getPaymentMethod() ? Payment.PaymentMethod.COD : Payment.PaymentMethod.QR_Payment);
+        payment.setPaymentMethod(dto.getPaymentMethod().equals("online") ? Payment.PaymentMethod.online : Payment.PaymentMethod.COD);
         payment.setOtpCode(otpService.generateOtp(user.getEmailId()));
         payment.setOtpGeneratedAt(LocalDateTime.now());
 
