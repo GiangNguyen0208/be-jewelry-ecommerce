@@ -46,6 +46,8 @@ public class CommentDTO {
 
     private boolean isPositive;
 
+    private boolean relevant;
+
     public static Integer calculateLevel(Comment comment) {
         int level = 0;
         Comment current = comment;
