@@ -66,21 +66,29 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
+                                "/api/ws/**",
                                 "/api/user/login",
                                 "/api/user/register",
                                 "/api/user/confirm",
                                 "/api/user/resend-confirmation",
+                                "/api/product/**",
+                                "/api/category/**",
+                                "/api/user/info/**",
+                                "/api/user/users",
+                                "/api/delivery/**",
+                                "/api/user/info/**",
                                 "/api/user/register-ctv",
                                 "/api/user/**",
                                 "/oauth2/**",
-                                "/api/product/list",
+                                "/api/topic/**",
+                                "/api/category/**",
+//                                "/api/product/list",
                                 "/api/product/{productId}",
                                 "/api/product/**",
                                 "/api/reverse-auction/**",
                                 "/reviews/product/**",
                                 "/api/wishlist/**",
                                 "/api/cart/**",
-                                "/api/product/**",
                                 "/api/delivery/fetch-user/**",
                                 "/api/delivery/add",
                                 "/api/orders/create",
@@ -88,15 +96,19 @@ public class SecurityConfig {
                                 "/api/verify/verify-otp",
                                 "/api/verify/resend-otp",
                                 "/api/product/list",
-                                "/api/product/{productId}",
+//                                "/api/product/{productId}",
                                 "/api/reviews/product/**",
                                 "/api/reviews/product/{productId}/average-rating",
                                 "/api/reviews/product/{productId}/total-reviews",
+                                "/api/category/**",
                                 "/api/verify/resend-otp",
                                 "/api/payment/create-stripe-session",
                                 "/api/webhook/stripe",
                                 "/api/upload/**",
-                                "/api/auctions/**"
+                                "/api/auctions/**",
+                                "/api/comment/**",
+                                "/api/auctions/**",
+                                "/api/chat/**"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

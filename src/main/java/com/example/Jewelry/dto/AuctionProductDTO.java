@@ -16,6 +16,9 @@ public class AuctionProductDTO {
     // Author created auction ID
     private int author_id;
 
+    // I need named
+    private String authorName;
+
     // CIV Collaboration ID
     private int collaboration_id;
 

@@ -1,7 +1,6 @@
 package com.example.Jewelry.dto;
 
 import com.example.Jewelry.dto.response.ImageDTO;
-import com.example.Jewelry.entity.AuctionProduct;
 import com.example.Jewelry.entity.Product;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;

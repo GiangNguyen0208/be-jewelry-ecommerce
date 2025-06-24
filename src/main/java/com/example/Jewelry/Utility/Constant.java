@@ -63,4 +63,17 @@ public class Constant {
         private CtvStatus(String status) { this.status =status;}
         public String value() {return this.status;}
     }
+
+    public enum TopicStatus {
+        OPEN, CLOSED, HIDDEN
+    }
+
+    public enum AuctionMessageType {
+        MESSAGE("MESSAGE"), ACCEPT("ACCEPT"), REJECT("REJECT"), UPDATE("UPDATE");
+        private String status;
+
+        private AuctionMessageType(String status) { this.status =status;}
+        public String value() {return this.status;}
+    }
+
 }

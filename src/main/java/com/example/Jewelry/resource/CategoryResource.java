@@ -3,6 +3,7 @@ package com.example.Jewelry.resource;
 import com.example.Jewelry.Utility.Constant;
 import com.example.Jewelry.dao.CategoryDAO;
 import com.example.Jewelry.dao.ProductDAO;
+import com.example.Jewelry.dto.CategoryDTO;
 import com.example.Jewelry.dto.request.CategoryRequestDTO;
 import com.example.Jewelry.dto.response.CategoryResponseDTO;
 import com.example.Jewelry.dto.response.CommonApiResponse;
@@ -155,7 +156,20 @@ public class CategoryResource {
             return new ResponseEntity<CategoryResponseDTO>(response, HttpStatus.OK);
         }
 
-        response.setCategories(categories);
+        List<CategoryDTO> categoryDTOS = new ArrayList<>();
+
+        for (Category category : categories) {
+            CategoryDTO categoryDTO = CategoryDTO.builder()
+                    .id(category.getId())
+                    .name(category.getName())
+                    .status(category.getStatus())
+                    .thumbnail(category.getThumbnail())
+                    .deleted(false)
+                    .build();
+            categoryDTOS.add(categoryDTO);
+        }
+
+        response.setCategories(categoryDTOS);
         response.setResponseMessage("Category fetched successful");
         response.setSuccess(true);
 
@@ -179,7 +193,19 @@ public class CategoryResource {
             return new ResponseEntity<CategoryResponseDTO>(response, HttpStatus.OK);
         }
 
-        response.setCategories(categories);
+        List<CategoryDTO> categoryDTOS = new ArrayList<>();
+
+        for (Category category : categories) {
+            CategoryDTO categoryDTO = CategoryDTO.builder()
+                    .name(category.getName())
+                    .status(category.getStatus())
+                    .thumbnail(category.getThumbnail())
+                    .deleted(false)
+                    .build();
+            categoryDTOS.add(categoryDTO);
+        }
+
+        response.setCategories(categoryDTOS);
         response.setResponseMessage("Category fetched successful");
         response.setSuccess(true);
 

@@ -1,15 +1,13 @@
 package com.example.Jewelry.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Entity
@@ -34,5 +32,19 @@ public class Category {
     private LocalDateTime updateAt;
 
     private LocalDateTime deletedAt;
+
+    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
+    private List<Topic> topics;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        updateAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updateAt = LocalDateTime.now();
+    }
 
 }

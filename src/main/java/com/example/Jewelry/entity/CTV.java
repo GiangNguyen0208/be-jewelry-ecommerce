@@ -30,8 +30,11 @@ public class CTV {
     private LocalDateTime createdAt;
     private String status;
 
+    /** Một CTV có nhiều AuctionProduct */
     @OneToMany(mappedBy = "ctv", cascade = CascadeType.ALL)
     @JsonIgnore
     private List<AuctionProduct> auctionProducts = new ArrayList<>();
+
+
 }
 

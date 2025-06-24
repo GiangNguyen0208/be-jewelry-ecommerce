@@ -459,7 +459,7 @@ public class UserResource {
         // Ví dụ cập nhật giá trị (tuỳ mục đích thực tế)
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
-        user.setEmailId(request.getEmailId());
+//        user.setEmailId(request.getEmailId());
         user.setPhoneNo(request.getPhoneNo());
         user.setGender(request.getGender()); // hoặc lấy từ request DTO nếu có
         user.setUpdateAt(LocalDateTime.now());
@@ -469,8 +469,6 @@ public class UserResource {
         response.setSuccess(true);
         response.setResponseMessage("User profile updated successfully");
         return new ResponseEntity<>(response, HttpStatus.OK);
-
-
     }
 
     public ResponseEntity<UserDTO> getUserById(int userId) {

@@ -2,7 +2,6 @@ package com.example.Jewelry.dao;
 
 import com.example.Jewelry.entity.Category;
 import com.example.Jewelry.entity.Product;
-import com.example.Jewelry.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -28,6 +27,6 @@ public interface ProductDAO extends JpaRepository<Product, Integer> {
     @Query("SELECT p FROM Product p WHERE p.status = :status")
     List<Product> findAllByStatusOpenAuction(@Param("status") String status);
 
-    @Query("SELECT p FROM Product p join AuctionProduct a ON p.id = a.product.id WHERE p.status = :status and a.author.id = :userID")
+    @Query("SELECT p FROM Product p join AuctionProduct a ON p.id = a.product.id join AuctionRoom r ON r.currentAuction.id = a.id WHERE p.status = :status and (a.author.id = :userID OR r.collaborator.user.id = :userID)")
     List<Product> findAllMyProductAuction(@Param("status") String status, @Param("userID") int userID);
 }

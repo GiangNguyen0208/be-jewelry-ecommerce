@@ -7,6 +7,9 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
+/**
+ * Sản phẩm đấu giá, cái để hiển thị trên trang đấu giá
+ */
 @Entity
 @Data
 @AllArgsConstructor
