@@ -1,5 +1,6 @@
 package com.example.Jewelry.service;
 
+import com.example.Jewelry.dto.request.UpdateAuctionDetailDTO;
 import com.example.Jewelry.entity.AuctionProduct;
 import com.example.Jewelry.entity.AuctionRoom;
 import com.example.Jewelry.entity.Product;
@@ -30,4 +31,5 @@ public interface AuctionProductService {
     AuctionRoom getRoomByID(String auctionRequestID);
 
     List<AuctionRoom> getAuctionRoomsByAuctionID(int auctionID);
+    AuctionRoom updateAuctionDetails(UpdateAuctionDetailDTO dto);
 }

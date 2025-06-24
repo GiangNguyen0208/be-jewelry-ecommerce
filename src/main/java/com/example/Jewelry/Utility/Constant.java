@@ -69,7 +69,7 @@ public class Constant {
     }
 
     public enum AuctionMessageType {
-        MESSAGE("MESSAGE"), ACCEPT("ACCEPT"), REJECT("REJECT"), UPDATE("UPDATE");
+        MESSAGE("MESSAGE"), ACCEPT("ACCEPT"), REJECT("REJECT"), PENDING("PENDING"), UPDATE("UPDATE");
         private String status;
 
         private AuctionMessageType(String status) { this.status =status;}
