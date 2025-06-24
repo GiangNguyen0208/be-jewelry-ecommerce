@@ -7,6 +7,7 @@ import com.example.Jewelry.dto.AuctionProductDTO;
 import com.example.Jewelry.dto.ProductDTO;
 import com.example.Jewelry.dto.request.AddProductRequestDTO;
 import com.example.Jewelry.dto.request.ReverseAuctionRequestDTO;
+import com.example.Jewelry.dto.request.UpdateAuctionDetailDTO;
 import com.example.Jewelry.dto.response.CommonApiResponse;
 import com.example.Jewelry.dto.response.ImageDTO;
 import com.example.Jewelry.dto.response.ProductResponseDTO;
@@ -15,6 +16,8 @@ import com.example.Jewelry.dto.response.ReverseAuctionResponseDTO.AuctionRoomDTO
 import com.example.Jewelry.entity.*;
 import com.example.Jewelry.exception.CategorySaveFailedException;
 import com.example.Jewelry.service.*;
+
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
@@ -28,6 +31,9 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.FileCopyUtils;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -188,9 +194,8 @@ public class ProductResource {
                     .status(auction.getStatus())
                     .author_id(auction.getAuthor() != null ? auction.getAuthor().getId() : 0)
                     .authorName(auction.getAuthor() != null ? "%s %s".formatted(
-                        auction.getAuthor().getLastName(),
-                        auction.getAuthor().getFirstName()
-                    ) : "Khong ten??")
+                            auction.getAuthor().getLastName(),
+                            auction.getAuthor().getFirstName()) : "Khong ten??")
                     .collaboration_id(auction.getCtv() != null ? auction.getCtv().getId() : 0)
                     .build();
         }
@@ -716,15 +721,15 @@ public class ProductResource {
             } else {
                 System.out.println("");
                 List<AuctionRoomDTO> auctionRoomsDTO = auctionRooms.stream()
-                .filter(room -> {
-                    // neu la ctv thi loc chi nhung cai co ho
-                    if (ctvUser != null) {
-                        return room.getCollaborator().getUser().equals(user);
-                    }
-                    //con lai co the thay moi nguoi
-                    return room.getCurrentAuction().getAuthor().equals(user);
-                })
-                .map(AuctionRoomDTO::fromEntity).toList();
+                        .filter(room -> {
+                            // neu la ctv thi loc chi nhung cai co ho
+                            if (ctvUser != null) {
+                                return room.getCollaborator().getUser().equals(user);
+                            }
+                            // con lai co the thay moi nguoi
+                            return room.getCurrentAuction().getAuthor().equals(user);
+                        })
+                        .map(AuctionRoomDTO::fromEntity).toList();
                 response.setSuccess(true);
                 response.setResponseMessage("Oke");
                 response.setRoomList(auctionRoomsDTO);
@@ -733,6 +738,19 @@ public class ProductResource {
         }
 
         return ResponseEntity.ok(response);
+    }
+
+    public ResponseEntity<ReverseAuctionResponseDTO> updateAuctionProduct(UpdateAuctionDetailDTO request) {
+        LOG.info("Received request for updating the product auction with room id: " + request.getRoomID());
+        AuctionRoom ar = auctionProductService.updateAuctionDetails(request);
+        ReverseAuctionResponseDTO response = new ReverseAuctionResponseDTO();
+
+        AuctionRoomDTO arDTO = AuctionRoomDTO.fromEntity(ar);
+
+        response.setRoom(arDTO);
+        response.setResponseMessage("Auction product updated successfully.");
+        response.setSuccess(true);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
 }
