@@ -272,8 +272,8 @@ public class OrderServiceImpl implements OrderService {
         if (user == null) {
             throw new ResourceNotFoundException("Người dùng với email " + userEmail + " không tìm thấy.");
         }
-        if (user.getRole() == null || !user.getRole().equalsIgnoreCase("admin")) {
-            throw new ResourceNotFoundException("Người dùng với email " + userEmail + " không phải là admin.");
+        if (user.getRole() == null || user.getRole().equalsIgnoreCase("user")) {
+            throw new ResourceNotFoundException("Người dùng với email " + userEmail + " không phải là CTV hoặc Admin.");
         }
         return orderRepo.findAll();
     }

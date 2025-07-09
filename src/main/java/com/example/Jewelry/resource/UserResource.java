@@ -365,7 +365,7 @@ public class UserResource {
 
         // Generate reset token (JWT or UUID)
         String token = userService.generateToken(user);
-        String resetUrl = "http://localhost:5173/reset-password?token=" + token;
+        String resetUrl = "http://localhost:3000/reset-password?token=" + token;
 
         // Send email
         emailService.send(

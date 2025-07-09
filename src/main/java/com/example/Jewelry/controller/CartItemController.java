@@ -1,5 +1,6 @@
 package com.example.Jewelry.controller;
 
+import com.example.Jewelry.dto.CartItemDTO;
 import com.example.Jewelry.dto.response.CommonApiResponse;
 import com.example.Jewelry.entity.CartItem;
 import com.example.Jewelry.service.CartItemService;
@@ -26,7 +27,7 @@ public class CartItemController {
 
     @GetMapping("/get")
     @Operation(summary = "Lấy tất cả sản phẩm trong giỏ của user")
-    public List<CartItem> getCartItems(@RequestParam int userId) {
+    public List<CartItemDTO> getCartItems(@RequestParam int userId) {
         return cartService.getCartItems(userId);
     }
 
