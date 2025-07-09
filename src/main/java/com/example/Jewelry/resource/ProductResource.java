@@ -44,6 +44,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Component
 @Transactional
@@ -582,7 +583,40 @@ public class ProductResource {
         List<Product> products = this.productService.getByCategoryNameAndStatus(categoryName,
                 Constant.ActiveStatus.ACTIVE.value());
 
-        response.setProducts(products);
+        List<ProductDTO> productDTOList = products.stream()
+                        .map(product -> ProductDTO.builder()
+                                .id(product.getId())
+                                .name(product.getName())
+                                .description(product.getDescription())
+                                .price(product.getPrice())
+                                .brand(product.getBrand())
+                                .imageURLs(product.getImages().stream()
+                                        .map(image -> ImageDTO.builder()
+                                                .url(image.getUrl())
+                                                .id(image.getId())
+                                                .build())
+                                        .collect(Collectors.toList()))
+                                .size(product.getSize())
+                                .productMaterial(product.getProductMaterial())
+                                .occasion(product.getOccasion())
+                                .prevPrice(product.getPrevPrice())
+                                .productIsFavorite(product.getProductIsFavorite())
+                                .productIsCart(product.getProductIsCart())
+                                .productIsBadge(product.getProductIsBadge())
+                                .deleted(product.isDeleted())
+                                .status(product.getStatus())
+                                .createdAt(product.getCreatedAt())
+                                .updateAt(product.getUpdateAt())
+                                .deletedAt(product.getDeletedAt())
+                                .categoryId(product.getCategory() != null ? product.getCategory().getId() : 0)
+                                .categoryName(product.getCategory() != null ? product.getCategory().getName() : null)
+                                .averageRating(0.0)
+                                .totalRating(0)
+                                .build())
+                                .collect(Collectors.toList());
+
+        response.setProductDTOs(productDTOList);
+//        response.setProducts(products);
         response.setResponseMessage("Fetch Product List By Category ID Successfully !");
         response.setSuccess(false);
 

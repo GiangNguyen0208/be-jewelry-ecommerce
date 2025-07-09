@@ -26,6 +26,7 @@ public class Comment {
     private LocalDateTime updatedAt;
     private boolean isDeleted = false;
     private boolean isPositive;
+    private boolean relevant;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "author_id", nullable = false)

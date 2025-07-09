@@ -3,7 +3,9 @@ package com.example.Jewelry.service.ServiceImpl;
 import com.example.Jewelry.dao.CartItemDAO;
 import com.example.Jewelry.dao.ProductDAO;
 import com.example.Jewelry.dao.UserDAO;
+import com.example.Jewelry.dto.CartItemDTO;
 import com.example.Jewelry.dto.response.CommonApiResponse;
+import com.example.Jewelry.dto.response.ImageDTO;
 import com.example.Jewelry.entity.CartItem;
 import com.example.Jewelry.entity.Product;
 import com.example.Jewelry.entity.User;
@@ -13,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class CartItemServiceImpl implements CartItemService {
@@ -60,9 +63,24 @@ public class CartItemServiceImpl implements CartItemService {
 
 
     @Override
-    public List<CartItem> getCartItems(int userId) {
+    public List<CartItemDTO> getCartItems(int userId) {
         User user = userDAO.findById(userId).orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
-        return cartItemDAO.findByUserAndDeletedFalse(user);
+        List<CartItem> cartItems = cartItemDAO.findByUserAndDeletedFalse(user);
+        List<CartItemDTO> cartItemDTOS = cartItems.stream()
+                .map(cartItem -> CartItemDTO.builder()
+                        .productId(cartItem.getProduct().getId())
+                        .id(cartItem.getId())
+                        .quantity(cartItem.getQuantity())
+                        .nameProduct(cartItem.getProduct().getName())
+                        .price(cartItem.getProduct().getPrice())
+                        .imageDTOS(cartItem.getProduct().getImages().stream()
+                                .map(image -> ImageDTO.builder()
+                                        .id(image.getId())
+                                        .url(image.getUrl())
+                                        .build())
+                                .collect(Collectors.toList()))
+                        .build()).collect(Collectors.toList());
+        return cartItemDTOS;
     }
 
     @Override
